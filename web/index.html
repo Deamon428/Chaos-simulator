@@ -81,7 +81,8 @@
       <span><span class="dot" style="background:#666"></span>no capture</span>
     </div>
     <p class="muted">This is the theory side: a friction-damped bob attracted by three
-    magnets, on a string of limited length anchored at the hub. Chaos shows up as
+    magnets near the side midpoints of the triangular board, hanging from the
+    hub on a string — the same geometry as the real rig. Chaos shows up as
     tiny start-position changes flipping the final magnet — compute the basin map
     to see the fractal boundary.</p>
   </div>
@@ -116,10 +117,33 @@
 
 <script>
 "use strict";
-// ---------- shared geometry (mirrors config/setup.json canonical layout) ----
-const MAG  = [[400,190],[175,580],[625,580]];
-const HUB  = [400,450];
+// ---------- shared geometry: triangular board like the real rig ------------
+// Board triangle (top, bottom-right, bottom-left) and hub at its centroid.
+const BOARD = [[400,80],[720.4,635],[79.6,635]];
+const HUB   = [400,450];
+// Magnets sit near the MIDPOINTS of each side, nudged inside toward the hub.
+const MAG   = BOARD.map((a, i) => {
+  const b = BOARD[(i + 1) % 3];
+  const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  return [mid[0] + 0.18 * (HUB[0] - mid[0]), mid[1] + 0.18 * (HUB[1] - mid[1])];
+});
 const MAG_COLORS = ["#ff5555","#50fa7b","#bd93f9"];
+
+// Walls: for each board edge, the inward normal and offset. The bob bounces
+// off the wooden strips just like the real rig.
+const WALLS = BOARD.map((a, i) => {
+  const b = BOARD[(i + 1) % 3];
+  const ex = b[0] - a[0], ey = b[1] - a[1];
+  let nx = ey, ny = -ex;
+  const nl = Math.hypot(nx, ny); nx /= nl; ny /= nl;
+  // outward normal: the hub must be on the NEGATIVE side of every wall
+  if ((HUB[0] - a[0]) * nx + (HUB[1] - a[1]) * ny > 0) { nx = -nx; ny = -ny; }
+  return { nx, ny, off: nx * a[0] + ny * a[1] };   // inside: dot(p,n) <= off
+});
+
+function insideBoard(x, y, margin = 0) {
+  return WALLS.every(w => x * w.nx + y * w.ny <= w.off - margin);
+}
 
 // ---------- tabs ----------
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
@@ -136,7 +160,11 @@ let basinLayer = null;                       // offscreen canvas with the basin 
 let bob = { x: 400, y: 250, vx: 0, vy: 0 };
 let running = false, trail = [], quiet = 0, raf = null;
 
-function clampToReach(p) {                   // string: bob can't leave the circle
+function clampToReach(p) {                   // board walls first, then string
+  for (const w of WALLS) {
+    const s = p.x * w.nx + p.y * w.ny - w.off;
+    if (s > 0) { p = { x: p.x - w.nx * s, y: p.y - w.ny * s }; }
+  }
   const dx = p.x - HUB[0], dy = p.y - HUB[1], r = Math.hypot(dx, dy), L = +len.value;
   if (r > L) return { x: HUB[0] + dx * L / r, y: HUB[1] + dy * L / r };
   return p;
@@ -159,6 +187,14 @@ function simStep(dt) {
   bob.vx = (bob.vx + ax * dt) * Math.exp(-c * dt);
   bob.vy = (bob.vy + ay * dt) * Math.exp(-c * dt);
   bob.x += bob.vx * dt; bob.y += bob.vy * dt;
+  for (const w of WALLS) {                   // wooden walls: bounce, damped
+    const s = bob.x * w.nx + bob.y * w.ny - w.off;
+    if (s > 0) {
+      bob.x -= w.nx * s; bob.y -= w.ny * s;
+      const vn = bob.vx * w.nx + bob.vy * w.ny;
+      if (vn > 0) { bob.vx -= 1.4 * vn * w.nx; bob.vy -= 1.4 * vn * w.ny; }
+    }
+  }
   const dx = bob.x - HUB[0], dy = bob.y - HUB[1], r = Math.hypot(dx, dy);
   if (r > L) {                               // string goes taut
     bob.x = HUB[0] + dx * L / r; bob.y = HUB[1] + dy * L / r;
@@ -179,17 +215,19 @@ function capturedBy() {
 function frame() {
   if (running) {
     for (let i = 0; i < 4; i++) simStep(1/240);
+    simTime += 1/60;
     trail.push([bob.x, bob.y]);
     if (trail.length > 3000) trail.shift();
     const speed = Math.hypot(bob.vx, bob.vy);
     quiet = speed < 3 ? quiet + 1 : 0;
-    if (quiet > 120) {                       // ~0.5 s of stillness at 240 Hz
+    if (quiet > 120 || simTime > 90) {       // settled, or rattling too long
       running = false;
       const c = capturedBy();
       document.getElementById("simStatus").textContent =
-        c >= 0 ? `Settled — captured by magnet M${c} (${Math.round(
+        (quiet > 120 ? "Settled — " : "Still moving after 90 s — ") +
+        (c >= 0 ? `last near magnet M${c} (${Math.round(
                    Math.hypot(bob.x - MAG[c][0], bob.y - MAG[c][1]))} px away).`
-               : "Settled without capture — string too long or force too weak.";
+                : "no capture — string too long or force too weak.");
     }
   }
   drawSim();
@@ -199,9 +237,11 @@ function frame() {
 function drawSim() {
   sctx.clearRect(0, 0, 800, 800);
   if (basinLayer) sctx.drawImage(basinLayer, 0, 0);
-  // board outline (string reach circle) + hub
-  sctx.strokeStyle = "#2a2e3b";
-  sctx.beginPath(); sctx.arc(HUB[0], HUB[1], +len.value, 0, 7); sctx.stroke();
+  // triangular board outline + hub
+  sctx.strokeStyle = "#5a5f70"; sctx.lineWidth = 3;
+  sctx.beginPath(); sctx.moveTo(...BOARD[0]);
+  sctx.lineTo(...BOARD[1]); sctx.lineTo(...BOARD[2]); sctx.closePath();
+  sctx.stroke(); sctx.lineWidth = 1;
   sctx.fillStyle = "#8a90a5"; sctx.fillRect(HUB[0]-5, HUB[1]-5, 10, 10);
   // magnets
   MAG.forEach(([mx, my], i) => {
@@ -223,8 +263,9 @@ function drawSim() {
   sctx.beginPath(); sctx.arc(bob.x, bob.y, 8, 0, 7); sctx.fill();
 }
 
+let simTime = 0;                             // seconds of the current drop
 function drop() {
-  trail = []; quiet = 0; running = true;
+  trail = []; quiet = 0; simTime = 0; running = true;
   document.getElementById("simStatus").textContent = "Swinging…";
 }
 
@@ -259,23 +300,36 @@ function computeBasin() {
   requestAnimationFrame(() => {                  // let the status paint first
     for (let gy = 5; gy < 800; gy += cell) {
       for (let gx = 5; gx < 800; gx += cell) {
+        if (!insideBoard(gx, gy, 8)) continue;   // outside the board: no drop
         const start = clampToReach({ x: gx, y: gy });
-        let { x, y, vx, vy } = start;
+        let { x, y, vx = 0, vy = 0 } = start;
         let capture = -1;
         for (let step = 0; step < 6000; step++) {
           const [ax, ay] = accel(x, y, F);
           vx = (vx + ax * (1/240)) * Math.exp(-c * (1/240));
           vy = (vy + ay * (1/240)) * Math.exp(-c * (1/240));
           x += vx * (1/240); y += vy * (1/240);
+          for (const w of WALLS) {
+            const sb = x * w.nx + y * w.ny - w.off;
+            if (sb > 0) {
+              x -= w.nx * sb; y -= w.ny * sb;
+              const vn = vx * w.nx + vy * w.ny;
+              if (vn > 0) { vx -= 1.4 * vn * w.nx; vy -= 1.4 * vn * w.ny; }
+            }
+          }
           const dx = x - HUB[0], dy = y - HUB[1], r = Math.hypot(dx, dy);
           if (r > L) {
             x = HUB[0] + dx * L / r; y = HUB[1] + dy * L / r;
             const nx = dx / r, ny = dy / r, vr = vx*nx + vy*ny;
             if (vr > 0) { vx -= vr * nx; vy -= vr * ny; }
           }
-          if (Math.hypot(vx, vy) < 3) { capture = capturedAt(x, y); break; }
+          // Only look for stillness after the bob has had time to move —
+          // at step 0 it is at rest by definition.
+          if (step > 30 && Math.hypot(vx, vy) < 3) {
+            capture = capturedAt(x, y); break;
+          }
         }
-        bctx.fillStyle = capture >= 0 ? MAG_COLORS[capture] + "55" : "#66666622";
+        bctx.fillStyle = capture >= 0 ? MAG_COLORS[capture] + "99" : "#88888830";
         bctx.fillRect(gx - cell/2, gy - cell/2, cell, cell);
       }
     }
