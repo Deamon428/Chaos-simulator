@@ -1,0 +1,6 @@
+build/
+.DS_Store
+Videos/
+data/dumps/
+data/inspect/
+*.mp4

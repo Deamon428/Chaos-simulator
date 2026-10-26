@@ -1,0 +1,12 @@
+run_id,video,start_x,start_y,end_x,end_y,magnet_id,dist_px,duration_s,detection_ratio,valid,note
+1,WhatsApp Video 2026-10-26 at 19.39.48.mp4,142.146,552.864,250.646,396.581,1,198.406,7.93826,1,0,rest point far from all magnets (attraction not engaged or no drop)
+2,WhatsApp Video 2026-10-26 at 19.42.49.mp4,175.164,500.967,189.357,454.247,1,126.57,45.5603,0.428676,0,unsettled at end of video; rest point far from all magnets (attraction not engaged or no drop)
+3,WhatsApp Video 2026-10-26 at 19.42.50 (1).mp4,158.912,520.571,357.508,365.685,0,180.751,34.1619,0.279024,0,unsettled at end of video; rest point far from all magnets (attraction not engaged or no drop)
+4,WhatsApp Video 2026-10-26 at 19.42.50.mp4,392.632,612.41,388.809,612.741,1,216.301,3.96611,1,0,rest point far from all magnets (attraction not engaged or no drop)
+5,WhatsApp Video 2026-10-26 at 19.42.51.mp4,269.177,318.764,265.996,319.994,0,186.696,9.45373,0.875887,0,rest point far from all magnets (attraction not engaged or no drop)
+6,WhatsApp Video 2026-10-26 at 19.42.53 (1).mp4,169.161,499.037,237.781,428.547,1,163.949,40.6149,0.119048,0,unsettled at end of video; rest point far from all magnets (attraction not engaged or no drop)
+7,WhatsApp Video 2026-10-26 at 19.42.53.mp4,484.94,242.637,465.126,209.927,0,68.1067,6.6369,1,1,
+8,WhatsApp Video 2026-10-26 at 19.53.59.mp4,193.911,455.912,86.0858,630.179,1,102.097,4.90079,0.904762,0,rest point far from all magnets (attraction not engaged or no drop)
+9,WhatsApp Video 2026-10-26 at 19.54.03.mp4,85.7985,632.217,86.1577,631.587,1,102.734,2.69962,0.950617,0,rest point far from all magnets (attraction not engaged or no drop)
+10,WhatsApp Video 2026-10-26 at 19.54.23.mp4,200.306,443.934,230.681,629.389,1,74.4288,49.3669,0.213352,0,unsettled at end of video
+11,physics-input.mp4,493.241,566.879,521.818,520.784,2,118.966,36.6643,0.963636,0,rest point far from all magnets (attraction not engaged or no drop)
