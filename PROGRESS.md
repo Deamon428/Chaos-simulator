@@ -59,15 +59,23 @@ calibration previews + tracked-frame dumps in `data/dumps/` (visually verified).
 - The old clips show the bob hanging still mid-board → attraction/repulsion
   never engaged at that string height (the reason for the design change).
 
+## Web UI (added 2026-10-27)
+
+`server.py` (stdlib-only Python) + `web/index.html`: localhost UI on
+http://localhost:8000. Endpoints: /api/videos, POST /api/analyze (wraps the
+tracker binary), /api/results, /api/images, /img. Frontend tabs: JS physics
+simulator (draggable bob, sliders, theoretical basin map computed in-browser),
+real-runs basin map + results table + calibration gallery, and one-click video
+analysis. Phase-2 basin map is effectively covered by the web UI (real points
+on the Runs tab; theoretical map in the simulator).
+
 ## Next steps
 
 1. Re-record with ATTRACTION: string short enough that the bob reaches the
    magnets, camera fixed per session, many drops from varied start points.
-   Verify each session's calibration via the cal_*.png dumps.
-2. Phase 2: `tools/basin_map.cpp` — start points colored by capturing magnet →
-   basin-of-attraction map.
-3. Optional improvements: motion-prediction tracking for fast blurred swings
-   (the <80 %-detection invalids), per-group layout references.
+   Verify each session's calibration via the cal_*.png dumps (or the web UI).
+2. Optional: motion-prediction tracking for fast blurred swings (the <80 %-
+   detection invalids), per-group layout references.
 
 ## Run commands
 

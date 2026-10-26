@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Magnetic Pendulum Lab</title>
+<style>
+  :root { --bg:#12141a; --panel:#1b1e27; --line:#2a2e3b; --fg:#e8eaf0; --dim:#9aa0b0; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:15px/1.5 -apple-system, "Segoe UI", sans-serif; }
+  header { display:flex; align-items:baseline; gap:24px; padding:14px 22px;
+           border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  h1 { font-size:19px; margin:0; }
+  nav button { background:none; border:1px solid var(--line); color:var(--dim);
+               padding:6px 14px; border-radius:8px; cursor:pointer; font-size:14px; }
+  nav button.active { color:var(--fg); border-color:#4a5068; background:var(--panel); }
+  main { padding:18px 22px; display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+  section[hidden] { display:none; }
+  canvas { background:#0b0c10; border:1px solid var(--line); border-radius:8px;
+           max-width:640px; width:100%; height:auto; touch-action:none; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+           padding:14px 16px; min-width:300px; flex:1; }
+  .row { display:flex; align-items:center; gap:10px; margin:8px 0; flex-wrap:wrap; }
+  input[type=range] { flex:1; min-width:120px; }
+  .val { width:52px; text-align:right; color:var(--dim); font-variant-numeric:tabular-nums; }
+  button.act { background:#3b4a86; color:#fff; border:0; padding:8px 14px;
+               border-radius:8px; cursor:pointer; font-size:14px; }
+  button.act:disabled { opacity:.45; cursor:default; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th, td { border-bottom:1px solid var(--line); padding:5px 8px; text-align:left;
+           white-space:nowrap; }
+  th { color:var(--dim); font-weight:600; }
+  td.ok { color:#7ce38b; } td.bad { color:#ff8080; }
+  pre { background:#0b0c10; border:1px solid var(--line); border-radius:8px;
+        padding:12px; max-height:260px; overflow:auto; font-size:12px; }
+  .muted { color:var(--dim); font-size:13px; }
+  .videoItem { display:flex; align-items:center; justify-content:space-between;
+               gap:10px; padding:7px 0; border-bottom:1px solid var(--line); }
+  .videoItem span { overflow:hidden; text-overflow:ellipsis; }
+  #gallery img { width:100%; margin:8px 0; border-radius:8px; border:1px solid var(--line); }
+  .legend { display:flex; gap:14px; margin:8px 0; font-size:13px; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🧲 Magnetic Pendulum Lab</h1>
+  <nav>
+    <button data-tab="sim" class="active">Simulator</button>
+    <button data-tab="runs">Real runs &amp; basin map</button>
+    <button data-tab="videos">Videos</button>
+  </nav>
+</header>
+<main>
+
+<!-- ============ SIMULATOR ============ -->
+<section id="tab-sim">
+  <canvas id="sim" width="800" height="800"></canvas>
+  <div class="panel">
+    <div class="row"><b>Simulated pendulum</b>
+      <span class="muted">drag the bob anywhere, release to drop</span></div>
+    <div class="row"><label>Attraction strength</label>
+      <input type="range" id="force" min="2" max="25" step="0.5" value="10">
+      <span class="val" id="forceVal">10</span></div>
+    <div class="row"><label>Damping</label>
+      <input type="range" id="damp" min="0" max="3" step="0.05" value="1.0">
+      <span class="val" id="dampVal">1.00</span></div>
+    <div class="row"><label>String length</label>
+      <input type="range" id="len" min="220" max="500" step="5" value="320">
+      <span class="val" id="lenVal">320</span></div>
+    <div class="row">
+      <button class="act" id="basinBtn">Compute basin map</button>
+      <button class="act" id="clearBtn" style="background:#444a5c">Clear map</button>
+    </div>
+    <div class="row"><span id="simStatus" class="muted">Drag the bob and release to drop it.</span></div>
+    <div class="legend">
+      <span><span class="dot" style="background:#ff5555"></span>M0</span>
+      <span><span class="dot" style="background:#50fa7b"></span>M1</span>
+      <span><span class="dot" style="background:#bd93f9"></span>M2</span>
+      <span><span class="dot" style="background:#666"></span>no capture</span>
+    </div>
+    <p class="muted">This is the theory side: a friction-damped bob attracted by three
+    magnets, on a string of limited length anchored at the hub. Chaos shows up as
+    tiny start-position changes flipping the final magnet — compute the basin map
+    to see the fractal boundary.</p>
+  </div>
+</section>
+
+<!-- ============ REAL RUNS ============ -->
+<section id="tab-runs" hidden>
+  <canvas id="basin" width="800" height="800"></canvas>
+  <div class="panel">
+    <div class="row"><b>Real drops</b>
+      <button class="act" id="refreshRuns">Refresh</button></div>
+    <div class="muted">Each dot is one video's drop point, colored by the magnet that
+    captured it; gray = invalid run. Dots come from data/results.csv.</div>
+    <div id="runsTable"></div>
+    <div class="row"><b>Calibration &amp; overlay images</b></div>
+    <div id="gallery"></div>
+  </div>
+</section>
+
+<!-- ============ VIDEOS ============ -->
+<section id="tab-videos" hidden>
+  <div class="panel">
+    <div class="row"><b>Videos in Videos/</b>
+      <button class="act" id="analyzeAll">Analyze all</button>
+      <button class="act" id="refreshVideos" style="background:#444a5c">Reload list</button></div>
+    <div id="videoList"><span class="muted">loading…</span></div>
+    <pre id="log">Analysis log will appear here.</pre>
+  </div>
+</section>
+
+</main>
+
+<script>
+"use strict";
+// ---------- shared geometry (mirrors config/setup.json canonical layout) ----
+const MAG  = [[400,190],[175,580],[625,580]];
+const HUB  = [400,450];
+const MAG_COLORS = ["#ff5555","#50fa7b","#bd93f9"];
+
+// ---------- tabs ----------
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("active", x === b));
+  for (const id of ["sim","runs","videos"])
+    document.getElementById("tab-" + id).hidden = (b.dataset.tab !== id);
+  if (b.dataset.tab === "runs") loadRuns();
+  if (b.dataset.tab === "videos") loadVideos();
+});
+
+// ================= SIMULATOR =================
+const sim = document.getElementById("sim"), sctx = sim.getContext("2d");
+let basinLayer = null;                       // offscreen canvas with the basin colors
+let bob = { x: 400, y: 250, vx: 0, vy: 0 };
+let running = false, trail = [], quiet = 0, raf = null;
+
+function clampToReach(p) {                   // string: bob can't leave the circle
+  const dx = p.x - HUB[0], dy = p.y - HUB[1], r = Math.hypot(dx, dy), L = +len.value;
+  if (r > L) return { x: HUB[0] + dx * L / r, y: HUB[1] + dy * L / r };
+  return p;
+}
+
+function accel(x, y, F) {                    // attraction: k / d^2 toward each magnet
+  let ax = 0, ay = 0;
+  for (const [mx, my] of MAG) {
+    const dx = mx - x, dy = my - y;
+    const d2 = Math.max(dx*dx + dy*dy, 2500);
+    const a = Math.min(F * 1e6 / d2, 4000) / Math.sqrt(d2);
+    ax += a * dx; ay += a * dy;
+  }
+  return [ax, ay];
+}
+
+function simStep(dt) {
+  const F = +force.value, c = +damp.value, L = +len.value;
+  const [ax, ay] = accel(bob.x, bob.y, F);
+  bob.vx = (bob.vx + ax * dt) * Math.exp(-c * dt);
+  bob.vy = (bob.vy + ay * dt) * Math.exp(-c * dt);
+  bob.x += bob.vx * dt; bob.y += bob.vy * dt;
+  const dx = bob.x - HUB[0], dy = bob.y - HUB[1], r = Math.hypot(dx, dy);
+  if (r > L) {                               // string goes taut
+    bob.x = HUB[0] + dx * L / r; bob.y = HUB[1] + dy * L / r;
+    const nx = dx / r, ny = dy / r, vr = bob.vx*nx + bob.vy*ny;
+    if (vr > 0) { bob.vx -= vr * nx; bob.vy -= vr * ny; }
+  }
+}
+
+function capturedBy() {
+  let best = -1, bd = 1e9;
+  MAG.forEach(([mx, my], i) => {
+    const d = Math.hypot(bob.x - mx, bob.y - my);
+    if (d < bd) { bd = d; best = i; }
+  });
+  return bd < 100 ? best : -1;               // -1 = no capture (never reached)
+}
+
+function frame() {
+  if (running) {
+    for (let i = 0; i < 4; i++) simStep(1/240);
+    trail.push([bob.x, bob.y]);
+    if (trail.length > 3000) trail.shift();
+    const speed = Math.hypot(bob.vx, bob.vy);
+    quiet = speed < 3 ? quiet + 1 : 0;
+    if (quiet > 120) {                       // ~0.5 s of stillness at 240 Hz
+      running = false;
+      const c = capturedBy();
+      document.getElementById("simStatus").textContent =
+        c >= 0 ? `Settled — captured by magnet M${c} (${Math.round(
+                   Math.hypot(bob.x - MAG[c][0], bob.y - MAG[c][1]))} px away).`
+               : "Settled without capture — string too long or force too weak.";
+    }
+  }
+  drawSim();
+  raf = requestAnimationFrame(frame);
+}
+
+function drawSim() {
+  sctx.clearRect(0, 0, 800, 800);
+  if (basinLayer) sctx.drawImage(basinLayer, 0, 0);
+  // board outline (string reach circle) + hub
+  sctx.strokeStyle = "#2a2e3b";
+  sctx.beginPath(); sctx.arc(HUB[0], HUB[1], +len.value, 0, 7); sctx.stroke();
+  sctx.fillStyle = "#8a90a5"; sctx.fillRect(HUB[0]-5, HUB[1]-5, 10, 10);
+  // magnets
+  MAG.forEach(([mx, my], i) => {
+    sctx.fillStyle = MAG_COLORS[i];
+    sctx.beginPath(); sctx.arc(mx, my, 11, 0, 7); sctx.fill();
+    sctx.fillStyle = "#e8eaf0"; sctx.font = "14px sans-serif";
+    sctx.fillText("M" + i, mx + 14, my - 10);
+  });
+  // trail + string + bob
+  if (trail.length > 1) {
+    sctx.strokeStyle = "rgba(120,200,255,.75)"; sctx.lineWidth = 1.5;
+    sctx.beginPath(); sctx.moveTo(trail[0][0], trail[0][1]);
+    for (const [x, y] of trail) sctx.lineTo(x, y);
+    sctx.stroke(); sctx.lineWidth = 1;
+  }
+  sctx.strokeStyle = "rgba(200,200,210,.35)";
+  sctx.beginPath(); sctx.moveTo(HUB[0], HUB[1]); sctx.lineTo(bob.x, bob.y); sctx.stroke();
+  sctx.fillStyle = "#ffffff";
+  sctx.beginPath(); sctx.arc(bob.x, bob.y, 8, 0, 7); sctx.fill();
+}
+
+function drop() {
+  trail = []; quiet = 0; running = true;
+  document.getElementById("simStatus").textContent = "Swinging…";
+}
+
+// drag to position, release to drop
+let dragging = false;
+function canvasPos(e) {
+  const r = sim.getBoundingClientRect();
+  return clampToReach({ x: (e.clientX - r.left) * 800 / r.width,
+                        y: (e.clientY - r.top) * 800 / r.height });
+}
+sim.addEventListener("pointerdown", e => {
+  dragging = true; running = false; bob = { ...canvasPos(e), vx: 0, vy: 0 };
+  trail = []; sim.setPointerCapture(e.pointerId);
+});
+sim.addEventListener("pointermove", e => { if (dragging) bob = { ...canvasPos(e), vx: 0, vy: 0 }; });
+sim.addEventListener("pointerup", () => { if (dragging) { dragging = false; drop(); } });
+
+// sliders
+for (const id of ["force", "damp", "len"])
+  document.getElementById(id).oninput = e =>
+    document.getElementById(id + "Val").textContent =
+      (+e.target.value).toFixed(id === "damp" ? 2 : 0);
+
+// ---- theoretical basin map: simulate a grid of drop points ----
+function computeBasin() {
+  const F = +force.value, c = +damp.value, L = +len.value;
+  basinLayer = document.createElement("canvas");
+  basinLayer.width = basinLayer.height = 800;
+  const bctx = basinLayer.getContext("2d");
+  const cell = 10;
+  document.getElementById("simStatus").textContent = "Computing basin map…";
+  requestAnimationFrame(() => {                  // let the status paint first
+    for (let gy = 5; gy < 800; gy += cell) {
+      for (let gx = 5; gx < 800; gx += cell) {
+        const start = clampToReach({ x: gx, y: gy });
+        let { x, y, vx, vy } = start;
+        let capture = -1;
+        for (let step = 0; step < 6000; step++) {
+          const [ax, ay] = accel(x, y, F);
+          vx = (vx + ax * (1/240)) * Math.exp(-c * (1/240));
+          vy = (vy + ay * (1/240)) * Math.exp(-c * (1/240));
+          x += vx * (1/240); y += vy * (1/240);
+          const dx = x - HUB[0], dy = y - HUB[1], r = Math.hypot(dx, dy);
+          if (r > L) {
+            x = HUB[0] + dx * L / r; y = HUB[1] + dy * L / r;
+            const nx = dx / r, ny = dy / r, vr = vx*nx + vy*ny;
+            if (vr > 0) { vx -= vr * nx; vy -= vr * ny; }
+          }
+          if (Math.hypot(vx, vy) < 3) { capture = capturedAt(x, y); break; }
+        }
+        bctx.fillStyle = capture >= 0 ? MAG_COLORS[capture] + "55" : "#66666622";
+        bctx.fillRect(gx - cell/2, gy - cell/2, cell, cell);
+      }
+    }
+    document.getElementById("simStatus").textContent =
+      "Basin map ready — each colored pixel is a drop position, colored by " +
+      "the magnet that captures it. Change a slider and recompute: the " +
+      "boundary moves and splits (that splitting IS the chaos).";
+    drawSim();
+  });
+}
+function capturedAt(x, y) {
+  let best = -1, bd = 1e9;
+  MAG.forEach(([mx, my], i) => {
+    const d = Math.hypot(x - mx, y - my);
+    if (d < bd) { bd = d; best = i; }
+  });
+  return bd < 100 ? best : -1;
+}
+document.getElementById("basinBtn").onclick = computeBasin;
+document.getElementById("clearBtn").onclick = () => { basinLayer = null; drawSim(); };
+document.getElementById("clearBtn").click();   // init empty layer
+frame();
+
+// ================= REAL RUNS =================
+async function loadRuns() {
+  const { rows } = await (await fetch("/api/results")).json();
+  const bctx = document.getElementById("basin").getContext("2d");
+  bctx.clearRect(0, 0, 800, 800);
+  bctx.fillStyle = "#8a90a5"; bctx.fillRect(HUB[0]-5, HUB[1]-5, 10, 10);
+  MAG.forEach(([mx, my], i) => {
+    bctx.fillStyle = MAG_COLORS[i];
+    bctx.beginPath(); bctx.arc(mx, my, 11, 0, 7); bctx.fill();
+    bctx.fillStyle = "#e8eaf0"; bctx.font = "14px sans-serif";
+    bctx.fillText("M" + i, mx + 14, my - 10);
+  });
+  for (const r of rows) {
+    bctx.fillStyle = r.valid ? MAG_COLORS[r.magnet_id] || "#999" : "#666";
+    bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 6, 0, 7); bctx.fill();
+  }
+  document.getElementById("runsTable").innerHTML =
+    "<table><tr><th>#</th><th>video</th><th>magnet</th><th>dist px</th>" +
+    "<th>frames seen</th><th>valid</th><th>note</th></tr>" +
+    rows.map(r => `<tr><td>${r.run_id}</td><td>${r.video.replace(".mp4","")}</td>` +
+      `<td style="color:${r.valid ? MAG_COLORS[r.magnet_id] : "#999"}">${r.valid ? "M"+r.magnet_id : "—"}</td>` +
+      `<td>${Math.round(r.dist_px)}</td><td>${Math.round(r.detection_ratio*100)}%</td>` +
+      `<td class="${r.valid ? "ok" : "bad"}">${r.valid ? "valid" : "invalid"}</td>` +
+      `<td>${r.note || ""}</td></tr>`).join("") + "</table>";
+  const { images } = await (await fetch("/api/images")).json();
+  document.getElementById("gallery").innerHTML = images
+    .filter(n => n.startsWith("cal_"))
+    .map(n => `<div class="muted">${n}</div><img src="/img?name=${encodeURIComponent(n)}">`)
+    .join("");
+}
+document.getElementById("refreshRuns").onclick = loadRuns;
+
+// ================= VIDEOS =================
+async function loadVideos() {
+  const { videos } = await (await fetch("/api/videos")).json();
+  document.getElementById("videoList").innerHTML = videos.map(v =>
+    `<div class="videoItem"><span>${v}</span>
+     <button class="act" data-video="${v}">Analyze</button></div>`).join("")
+    || '<span class="muted">no videos found in Videos/</span>';
+  document.querySelectorAll("#videoList button").forEach(b =>
+    b.onclick = () => analyze(b.dataset.video, b));
+}
+async function analyze(video, btn) {
+  const log = document.getElementById("log");
+  if (btn) { btn.disabled = true; btn.textContent = "working…"; }
+  log.textContent = `Analyzing ${video} — this can take a minute…`;
+  try {
+    const res = await fetch("/api/analyze", { method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ video }) });
+    const data = await res.json();
+    log.textContent = data.log + "\n\n(Results table updated — see the “Real runs” tab.)";
+    if (btn) { btn.disabled = false; btn.textContent = "Analyze"; }
+  } catch (err) {
+    log.textContent = "failed: " + err;
+    if (btn) { btn.disabled = false; btn.textContent = "Analyze"; }
+  }
+}
+document.getElementById("analyzeAll").onclick = e => analyze("*", e.target);
+document.getElementById("refreshVideos").onclick = loadVideos;
+</script>
+</body>
+</html>

@@ -19,6 +19,28 @@ cmake -S . -B build
 cmake --build build
 ```
 
+## Web UI (localhost, no terminal needed day-to-day)
+
+```bash
+python3 server.py             # zero dependencies; then open http://localhost:8000
+```
+
+Three tabs:
+- **Simulator** — a live physics model of the attraction pendulum in the
+  browser (canvas): drag the bob anywhere inside the string's reach and
+  release; sliders for attraction strength, damping, and string length.
+  "Compute basin map" simulates a grid of drop points and colors each by the
+  magnet that captures it — the fractal basin boundary of the chaos.
+- **Real runs & basin map** — plots every analyzed video's drop point colored
+  by its capturing magnet (gray = invalid run), the results table, and the
+  calibration preview images.
+- **Videos** — click Analyze on any clip in `Videos/` (or "Analyze all"); the
+  server runs the C++ tracker and streams the log back. Same engine and
+  outputs as the terminal commands below.
+
+The frontend is a single plain file you can freely restyle: `web/index.html`.
+The server (`server.py`) is stdlib-only Python and only wraps the binaries.
+
 Two binaries: `build/pendulum-track` (the pipeline) and `build/pendulum-calibrate`
 (manual click calibration — usually not needed, see below).
 
