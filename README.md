@@ -11,6 +11,12 @@ themselves: a finished run ends essentially on top of one of the magnets, and
 the "basin of attraction" of each magnet is the region from which drops lead
 to it.
 
+**Magnet layout is the real, measured one** — the magnets are NOT evenly
+spaced, so the canonical board frame (`canonical_magnets` in the config)
+holds the actual measured positions from the reference video, and every
+video's calibration maps its detected magnets onto that same layout. The
+web simulator derives its board triangle from these positions too.
+
 ## Build
 
 ```bash

@@ -88,6 +88,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(data)
 
@@ -96,6 +97,9 @@ class Handler(BaseHTTPRequestHandler):
         if route.path in ("/", "/index.html"):
             page = (WEB / "index.html").read_bytes()
             self._send(200, page, "text/html; charset=utf-8")
+        elif route.path == "/api/config":
+            cfg_path = ROOT / "config" / "setup.json"
+            self._send(200, json.loads(cfg_path.read_text()))
         elif route.path == "/api/videos":
             self._send(200, {"videos": list_videos()})
         elif route.path == "/api/results":

@@ -3,11 +3,35 @@
   "homography": null,
   "magnets": [],
   "valleys": [],
-  "layout_ref_bary": [0.54, 0.37],
-  "canonical_magnets": [[400, 190], [175, 580], [625, 580]],
+  "layout_ref_bary": [
+    0.54,
+    0.37
+  ],
+  "canonical_magnets": [
+    [
+      77,
+      433
+    ],
+    [
+      439,
+      281
+    ],
+    [
+      413,
+      688
+    ]
+  ],
   "detection_mode": "hsv",
-  "hsv_lower": [0, 0, 130],
-  "hsv_upper": [180, 55, 255],
+  "hsv_lower": [
+    0,
+    0,
+    130
+  ],
+  "hsv_upper": [
+    180,
+    55,
+    255
+  ],
   "bright_threshold": 180,
   "min_blob_area": 150,
   "max_blob_area": 3500,

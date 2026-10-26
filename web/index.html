@@ -67,12 +67,13 @@
       <input type="range" id="damp" min="0" max="3" step="0.05" value="1.0">
       <span class="val" id="dampVal">1.00</span></div>
     <div class="row"><label>String length</label>
-      <input type="range" id="len" min="220" max="500" step="5" value="320">
-      <span class="val" id="lenVal">320</span></div>
+      <input type="range" id="len" min="150" max="600" step="5" value="380">
+      <span class="val" id="lenVal">380</span></div>
     <div class="row">
       <button class="act" id="basinBtn">Compute basin map</button>
       <button class="act" id="clearBtn" style="background:#444a5c">Clear map</button>
     </div>
+    <div class="row"><span id="live" class="muted" style="font-variant-numeric:tabular-nums"></span></div>
     <div class="row"><span id="simStatus" class="muted">Drag the bob and release to drop it.</span></div>
     <div class="legend">
       <span><span class="dot" style="background:#ff5555"></span>M0</span>
@@ -117,32 +118,57 @@
 
 <script>
 "use strict";
-// ---------- shared geometry: triangular board like the real rig ------------
-// Board triangle (top, bottom-right, bottom-left) and hub at its centroid.
-const BOARD = [[400,80],[720.4,635],[79.6,635]];
-const HUB   = [400,450];
-// Magnets sit near the MIDPOINTS of each side, nudged inside toward the hub.
-const MAG   = BOARD.map((a, i) => {
-  const b = BOARD[(i + 1) % 3];
-  const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-  return [mid[0] + 0.18 * (HUB[0] - mid[0]), mid[1] + 0.18 * (HUB[1] - mid[1])];
-});
+// ---------- shared geometry: the REAL board, loaded from config ------------
+// MAG is replaced by /api/config (canonical_magnets = the actual measured
+// magnet positions in board px, hub at (400,450)).
+let CFG_MAG = [[77,433],[439,281],[413,688]];  // canonical (results.csv space)
+let MAG  = CFG_MAG.slice();                    // sim-space magnets (transformed)
+let SIM_HUB = [400,450];                       // sim-space hub
+const HUB   = [400,450];                       // canonical hub (runs map)
 const MAG_COLORS = ["#ff5555","#50fa7b","#bd93f9"];
+let BOARD = [], WALLS = [];
 
-// Walls: for each board edge, the inward normal and offset. The bob bounces
-// off the wooden strips just like the real rig.
-const WALLS = BOARD.map((a, i) => {
-  const b = BOARD[(i + 1) % 3];
-  const ex = b[0] - a[0], ey = b[1] - a[1];
-  let nx = ey, ny = -ex;
-  const nl = Math.hypot(nx, ny); nx /= nl; ny /= nl;
-  // outward normal: the hub must be on the NEGATIVE side of every wall
-  if ((HUB[0] - a[0]) * nx + (HUB[1] - a[1]) * ny > 0) { nx = -nx; ny = -ny; }
-  return { nx, ny, off: nx * a[0] + ny * a[1] };   // inside: dot(p,n) <= off
-});
+// The wooden triangle is the one whose side midpoints are the magnets:
+// vertex i = m_j + m_k - m_i, scaled to fit the canvas.
+function rebuildGeometry() {
+  // side-midpoint inversion: vertex i = m_j + m_k - m_i
+  let verts = CFG_MAG.map((m, i) => {
+    const a = CFG_MAG[(i + 1) % 3], b = CFG_MAG[(i + 2) % 3];
+    return [a[0] + b[0] - m[0], a[1] + b[1] - m[1]];
+  });
+  const xs = verts.map(v => v[0]), ys = verts.map(v => v[1]);
+  const bcx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const bcy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const k = Math.min(760 / (Math.max(...xs) - Math.min(...xs)),
+                     760 / (Math.max(...ys) - Math.min(...ys)), 1.6);
+  const T = ([x, y]) => [(x - bcx) * k + 400, (y - bcy) * k + 400];
+  BOARD = verts.map(T);
+  MAG = CFG_MAG.map(T);
+  SIM_HUB = T([HUB[0], HUB[1]]);
+  WALLS = BOARD.map((a, i) => {
+    const b = BOARD[(i + 1) % 3];
+    const ex = b[0] - a[0], ey = b[1] - a[1];
+    let nx = ey, ny = -ex;
+    const nl = Math.hypot(nx, ny); nx /= nl; ny /= nl;
+    // outward normal: the hub must be on the NEGATIVE side of every wall
+    if ((HUB[0] - a[0]) * nx + (HUB[1] - a[1]) * ny > 0) { nx = -nx; ny = -ny; }
+    return { nx, ny, off: nx * a[0] + ny * a[1] };   // inside: dot(p,n) <= off
+  });
+}
+rebuildGeometry();
 
 function insideBoard(x, y, margin = 0) {
   return WALLS.every(w => x * w.nx + y * w.ny <= w.off - margin);
+}
+
+async function loadConfig() {
+  try {
+    const cfg = await (await fetch("/api/config")).json();
+    if (Array.isArray(cfg.canonical_magnets) && cfg.canonical_magnets.length === 3)
+      CFG_MAG = cfg.canonical_magnets.map(([x, y]) => [+x, +y]);
+    rebuildGeometry();
+    bob = { x: SIM_HUB[0], y: SIM_HUB[1] - 120, vx: 0, vy: 0 };
+  } catch (e) { console.warn("config load failed, using reference layout", e); }
 }
 
 // ---------- tabs ----------
@@ -165,18 +191,19 @@ function clampToReach(p) {                   // board walls first, then string
     const s = p.x * w.nx + p.y * w.ny - w.off;
     if (s > 0) { p = { x: p.x - w.nx * s, y: p.y - w.ny * s }; }
   }
-  const dx = p.x - HUB[0], dy = p.y - HUB[1], r = Math.hypot(dx, dy), L = +len.value;
-  if (r > L) return { x: HUB[0] + dx * L / r, y: HUB[1] + dy * L / r };
+  const dx = p.x - SIM_HUB[0], dy = p.y - SIM_HUB[1], r = Math.hypot(dx, dy), L = +len.value;
+  if (r > L) return { x: SIM_HUB[0] + dx * L / r, y: SIM_HUB[1] + dy * L / r };
   return p;
 }
 
-function accel(x, y, F) {                    // attraction: k / d^2 toward each magnet
+function accel(x, y, F) {                    // attraction: softened 1/d^2
   let ax = 0, ay = 0;
   for (const [mx, my] of MAG) {
     const dx = mx - x, dy = my - y;
-    const d2 = Math.max(dx*dx + dy*dy, 2500);
-    const a = Math.min(F * 1e6 / d2, 4000) / Math.sqrt(d2);
-    ax += a * dx; ay += a * dy;
+    const d2 = dx*dx + dy*dy;
+    const mag = F * 1e6 / (d2 + 4000);       // smooth: no singularity, no cap
+    const d = Math.sqrt(d2);
+    ax += mag * dx / d; ay += mag * dy / d;
   }
   return [ax, ay];
 }
@@ -195,9 +222,9 @@ function simStep(dt) {
       if (vn > 0) { bob.vx -= 1.4 * vn * w.nx; bob.vy -= 1.4 * vn * w.ny; }
     }
   }
-  const dx = bob.x - HUB[0], dy = bob.y - HUB[1], r = Math.hypot(dx, dy);
+  const dx = bob.x - SIM_HUB[0], dy = bob.y - SIM_HUB[1], r = Math.hypot(dx, dy);
   if (r > L) {                               // string goes taut
-    bob.x = HUB[0] + dx * L / r; bob.y = HUB[1] + dy * L / r;
+    bob.x = SIM_HUB[0] + dx * L / r; bob.y = SIM_HUB[1] + dy * L / r;
     const nx = dx / r, ny = dy / r, vr = bob.vx*nx + bob.vy*ny;
     if (vr > 0) { bob.vx -= vr * nx; bob.vy -= vr * ny; }
   }
@@ -230,6 +257,14 @@ function frame() {
                 : "no capture — string too long or force too weak.");
     }
   }
+  let bd = 1e9, bi = -1;
+  MAG.forEach(([mx, my], i) => {
+    const d = Math.hypot(bob.x - mx, bob.y - my);
+    if (d < bd) { bd = d; bi = i; }
+  });
+  document.getElementById("live").textContent =
+    "speed " + Math.round(Math.hypot(bob.vx, bob.vy)) +
+    " px/s  ·  nearest magnet M" + bi + " at " + Math.round(bd) + " px";
   drawSim();
   raf = requestAnimationFrame(frame);
 }
@@ -242,7 +277,7 @@ function drawSim() {
   sctx.beginPath(); sctx.moveTo(...BOARD[0]);
   sctx.lineTo(...BOARD[1]); sctx.lineTo(...BOARD[2]); sctx.closePath();
   sctx.stroke(); sctx.lineWidth = 1;
-  sctx.fillStyle = "#8a90a5"; sctx.fillRect(HUB[0]-5, HUB[1]-5, 10, 10);
+  sctx.fillStyle = "#8a90a5"; sctx.fillRect(SIM_HUB[0]-5, SIM_HUB[1]-5, 10, 10);
   // magnets
   MAG.forEach(([mx, my], i) => {
     sctx.fillStyle = MAG_COLORS[i];
@@ -258,7 +293,7 @@ function drawSim() {
     sctx.stroke(); sctx.lineWidth = 1;
   }
   sctx.strokeStyle = "rgba(200,200,210,.35)";
-  sctx.beginPath(); sctx.moveTo(HUB[0], HUB[1]); sctx.lineTo(bob.x, bob.y); sctx.stroke();
+  sctx.beginPath(); sctx.moveTo(SIM_HUB[0], SIM_HUB[1]); sctx.lineTo(bob.x, bob.y); sctx.stroke();
   sctx.fillStyle = "#ffffff";
   sctx.beginPath(); sctx.arc(bob.x, bob.y, 8, 0, 7); sctx.fill();
 }
@@ -317,9 +352,9 @@ function computeBasin() {
               if (vn > 0) { vx -= 1.4 * vn * w.nx; vy -= 1.4 * vn * w.ny; }
             }
           }
-          const dx = x - HUB[0], dy = y - HUB[1], r = Math.hypot(dx, dy);
+          const dx = x - SIM_HUB[0], dy = y - SIM_HUB[1], r = Math.hypot(dx, dy);
           if (r > L) {
-            x = HUB[0] + dx * L / r; y = HUB[1] + dy * L / r;
+            x = SIM_HUB[0] + dx * L / r; y = SIM_HUB[1] + dy * L / r;
             const nx = dx / r, ny = dy / r, vr = vx*nx + vy*ny;
             if (vr > 0) { vx -= vr * nx; vy -= vr * ny; }
           }
@@ -351,15 +386,23 @@ function capturedAt(x, y) {
 document.getElementById("basinBtn").onclick = computeBasin;
 document.getElementById("clearBtn").onclick = () => { basinLayer = null; drawSim(); };
 document.getElementById("clearBtn").click();   // init empty layer
+loadConfig().then(() => drawSim());
 frame();
 
 // ================= REAL RUNS =================
 async function loadRuns() {
-  const { rows } = await (await fetch("/api/results")).json();
+  let rows;
+  try {
+    rows = (await (await fetch("/api/results")).json()).rows;
+  } catch (err) {
+    document.getElementById("runsTable").innerHTML =
+      '<span class="bad">failed to load results: ' + err + "</span>";
+    return;
+  }
   const bctx = document.getElementById("basin").getContext("2d");
   bctx.clearRect(0, 0, 800, 800);
   bctx.fillStyle = "#8a90a5"; bctx.fillRect(HUB[0]-5, HUB[1]-5, 10, 10);
-  MAG.forEach(([mx, my], i) => {
+  CFG_MAG.forEach(([mx, my], i) => {
     bctx.fillStyle = MAG_COLORS[i];
     bctx.beginPath(); bctx.arc(mx, my, 11, 0, 7); bctx.fill();
     bctx.fillStyle = "#e8eaf0"; bctx.font = "14px sans-serif";

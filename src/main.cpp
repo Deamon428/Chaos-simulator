@@ -319,13 +319,16 @@ int main(int argc, char** argv) {
                 std::cout << " (" << static_cast<int>(m.x) << "," << static_cast<int>(m.y) << ")";
             std::cout << "\n";
             if (!args.dump_dir.empty() && !cal.sample_frame.empty()) {
-                // sample_frame is already in the provisional board frame.
-                cv::Mat vis = cal.sample_frame.clone();
+                // sample_frame is in the provisional frame; warp it into the
+                // canonical frame so the markers land on the real magnets.
+                cv::Mat canonical_view, vis;
+                cv::warpPerspective(cal.sample_frame, canonical_view, cal.homography,
+                                    {effective.board_size, effective.board_size});
                 std::vector<std::pair<int, cv::Point2d>> empty;
                 SettleDetector dummy(effective);
-                drawOverlay(vis, empty, effective, dummy, 0.0);
+                drawOverlay(canonical_view, empty, effective, dummy, 0.0);
                 cv::imwrite(args.dump_dir + "/cal_" + fs::path(video).stem().string() + ".png",
-                            vis);
+                            canonical_view);
             }
         }
 

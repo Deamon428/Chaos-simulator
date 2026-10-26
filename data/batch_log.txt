@@ -1,66 +1,64 @@
 == Videos/WhatsApp Video 2026-10-26 at 19.39.48.mp4
    autocal magnets (image px): (77,433) (439,281) (413,688)
-   start=(142.146, 552.864)  end=(250.646, 396.581)
-   magnet M1  dist=198.406 px  duration=7.93826s  detection=100%  [INVALID]
+   start=(415.981, 247.725)  end=(270.275, 325.704)
+   magnet M1  dist=174.546 px  duration=5.5193s  detection=100%  [INVALID]
    trajectory: data/trajectories/run_1_WhatsApp Video 2026-10-26 at 19.39.48.csv
    note: rest point far from all magnets (attraction not engaged or no drop)
 == Videos/WhatsApp Video 2026-10-26 at 19.42.49.mp4
    autocal magnets (image px): (125,445) (483,267) (468,637)
-   start=(175.164, 500.967)  end=(189.357, 454.247)
-   magnet M1  dist=126.57 px  duration=45.5603s  detection=42.8676%  [INVALID]
+   start=(368.26, 271.221)  end=(342.854, 275.812)
+   magnet M1  dist=96.2859 px  duration=45.5603s  detection=30.2853%  [INVALID]
    trajectory: data/trajectories/run_2_WhatsApp Video 2026-10-26 at 19.42.49.csv
-   note: unsettled at end of video; rest point far from all magnets (attraction not engaged or no drop)
+   note: unsettled at end of video
 == Videos/WhatsApp Video 2026-10-26 at 19.42.50 (1).mp4
    autocal magnets (image px): (127,467) (489,307) (474,697)
-   start=(158.912, 520.571)  end=(357.508, 365.685)
-   magnet M0  dist=180.751 px  duration=34.1619s  detection=27.9024%  [INVALID]
+   start=(386.52, 258.752)  end=(363.569, 696.849)
+   magnet M2  dist=50.2171 px  duration=6.23246s  detection=100%  [valid]
    trajectory: data/trajectories/run_3_WhatsApp Video 2026-10-26 at 19.42.50 (1).csv
-   note: unsettled at end of video; rest point far from all magnets (attraction not engaged or no drop)
 == Videos/WhatsApp Video 2026-10-26 at 19.42.50.mp4
    autocal magnets (image px): (736,728) (203,104) (325,595)
-   start=(392.632, 612.41)  end=(388.809, 612.741)
-   magnet M1  dist=216.301 px  duration=3.96611s  detection=100%  [INVALID]
+   start=(455.584, 482.381)  end=(457.041, 479.726)
+   magnet M1  dist=199.543 px  duration=4.16608s  detection=100%  [INVALID]
    trajectory: data/trajectories/run_4_WhatsApp Video 2026-10-26 at 19.42.50.csv
    note: rest point far from all magnets (attraction not engaged or no drop)
 == Videos/WhatsApp Video 2026-10-26 at 19.42.51.mp4
    autocal magnets (image px): (138,469) (483,298) (475,694)
-   start=(269.177, 318.764)  end=(265.996, 319.994)
-   magnet M0  dist=186.696 px  duration=9.45373s  detection=87.5887%  [INVALID]
+   start=(391.688, 263.491)  end=(201.06, 329.992)
+   magnet M0  dist=161.25 px  duration=7.24115s  detection=81.9444%  [INVALID]
    trajectory: data/trajectories/run_5_WhatsApp Video 2026-10-26 at 19.42.51.csv
    note: rest point far from all magnets (attraction not engaged or no drop)
 == Videos/WhatsApp Video 2026-10-26 at 19.42.53 (1).mp4
    autocal magnets (image px): (132,469) (488,305) (479,694)
-   start=(169.161, 499.037)  end=(237.781, 428.547)
-   magnet M1  dist=163.949 px  duration=40.6149s  detection=11.9048%  [INVALID]
+   start=(367.837, 263.211)  end=(371.996, 260.849)
+   magnet M1  dist=69.9687 px  duration=40.6149s  detection=7.14286%  [INVALID]
    trajectory: data/trajectories/run_6_WhatsApp Video 2026-10-26 at 19.42.53 (1).csv
-   note: unsettled at end of video; rest point far from all magnets (attraction not engaged or no drop)
+   note: unsettled at end of video
 == Videos/WhatsApp Video 2026-10-26 at 19.42.53.mp4
    autocal magnets (image px): (475,702) (495,316) (130,472)
-   start=(484.94, 242.637)  end=(465.126, 209.927)
-   magnet M0  dist=68.1067 px  duration=6.6369s  detection=100%  [valid]
+   start=(119.283, 516.809)  end=(89.5829, 494.427)
+   magnet M0  dist=62.7021 px  duration=4.61551s  detection=100%  [valid]
    trajectory: data/trajectories/run_7_WhatsApp Video 2026-10-26 at 19.42.53.csv
 == Videos/WhatsApp Video 2026-10-26 at 19.53.59.mp4
    autocal magnets (image px): (697,474) (310,568) (384,202)
-   start=(193.911, 455.912)  end=(86.0858, 630.179)
-   magnet M1  dist=102.097 px  duration=4.90079s  detection=90.4762%  [INVALID]
+   start=(325.466, 281.969)  end=(489.156, 207.18)
+   magnet M1  dist=89.2469 px  duration=4.73409s  detection=89.4366%  [valid]
    trajectory: data/trajectories/run_8_WhatsApp Video 2026-10-26 at 19.53.59.csv
-   note: rest point far from all magnets (attraction not engaged or no drop)
 == Videos/WhatsApp Video 2026-10-26 at 19.54.03.mp4
    autocal magnets (image px): (692,468) (325,592) (384,235)
-   start=(85.7985, 632.217)  end=(86.1577, 631.587)
-   magnet M1  dist=102.734 px  duration=2.69962s  detection=95.0617%  [INVALID]
+   start=(490.737, 208.263)  end=(489.798, 207.653)
+   magnet M1  dist=89.22 px  duration=40.361s  detection=5.9455%  [INVALID]
    trajectory: data/trajectories/run_9_WhatsApp Video 2026-10-26 at 19.54.03.csv
-   note: rest point far from all magnets (attraction not engaged or no drop)
+   note: settled at video end
 == Videos/WhatsApp Video 2026-10-26 at 19.54.23.mp4
    autocal magnets (image px): (692,467) (322,592) (369,190)
-   start=(200.306, 443.934)  end=(230.681, 629.389)
-   magnet M1  dist=74.4288 px  duration=49.3669s  detection=21.3352%  [INVALID]
+   start=(315.597, 286.056)  end=(334.852, 374.278)
+   magnet M1  dist=139.813 px  duration=49.3669s  detection=17.7564%  [INVALID]
    trajectory: data/trajectories/run_10_WhatsApp Video 2026-10-26 at 19.54.23.csv
-   note: unsettled at end of video
+   note: unsettled at end of video; rest point far from all magnets (attraction not engaged or no drop)
 == Videos/physics-input.mp4
    autocal magnets (image px): (348,47) (706,528) (18,534)
-   start=(493.241, 566.879)  end=(521.818, 520.784)
-   magnet M2  dist=118.966 px  duration=36.6643s  detection=96.3636%  [INVALID]
+   start=(409, 567.074)  end=(366.065, 587.074)
+   magnet M2  dist=111.305 px  duration=36.6309s  detection=97.4522%  [INVALID]
    trajectory: data/trajectories/run_11_physics-input.csv
    note: rest point far from all magnets (attraction not engaged or no drop)
 results written to data/results.csv

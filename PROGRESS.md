@@ -59,6 +59,19 @@ calibration previews + tracked-frame dumps in `data/dumps/` (visually verified).
 - The old clips show the bob hanging still mid-board → attraction/repulsion
   never engaged at that string height (the reason for the design change).
 
+## Canonical layout is now the REAL measured one (2026-10-27)
+
+`config/setup.json canonical_magnets = [[77,433],[439,281],[413,688]]` — the
+reference video's detected trio in its provisional frame (hub at 400,450).
+The real magnets are slightly UNEVEN (sides 393/414/428 px) and the hub is
+offset; the old equilateral assumption put the markers near-but-not-on the
+silver circles (user-visible bug). The cal preview is now warped by the FINAL
+homography so markers land exactly on the circles. The web sim derives its
+board triangle from this layout (vertex i = m_j + m_k − m_i, fit-scaled);
+fixes also included: wall normals were inverted (bob glued to edges), basin
+grid sims had undefined vx/vy (all cells "no capture"), and the old hard
+force cap dominated the dynamics (now softened k/(d²+4000)).
+
 ## Web UI (added 2026-10-27)
 
 `server.py` (stdlib-only Python) + `web/index.html`: localhost UI on
