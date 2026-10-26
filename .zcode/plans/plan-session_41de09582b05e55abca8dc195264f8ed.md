@@ -1,58 +1,32 @@
-# Magnetic Chaos Pendulum — Software Plan
+# Pendulum Lab — Fixes + Prediction & Photo Features
 
-## Goal
-A C++/OpenCV pipeline that takes a video of a pendulum drop (like physics-input.mp4), tracks the bob, detects when it settles, classifies which valley (equilibrium point) it stopped in, and logs the result. Phase 2 adds the basin-of-attraction map.
+## 1. Real runs & basin map tab (bug fixes + real interactivity)
+- **Refresh feedback:** after reload, show "updated HH:MM:SS · N runs" next to the button so it visibly does something.
+- **Row ↔ dot interaction:** clicking a table row highlights its drop dot on the canvas (ring) and vice versa.
+- **Invalid filter:** checkbox to hide/show invalid runs (applies to dots and table).
+- **Trajectory view:** selecting a run fetches its trajectory CSV and draws the bob's path on the canvas (time-gradient polyline, start = white dot, end = magnet-colored dot).
+- **Staleness hardening:** cache-busting query params on all API fetches, a visible red banner if any JS error occurs, and data loaded on page load (not only on tab click).
+- server.py: new endpoints `GET /api/trajectories` (list) and `GET /api/traj?name=` (serve one CSV, sanitized).
 
-## Project structure (new CMake project in /Users/aayushgarg/CHAOS)
+## 2. Simulator damping
+- Default damping 1.0 → **0.25** (slider range 0–2), force default 12. The readout already shows live speed/distance; keep semantics (damping is a per-second exponential drag).
 
-CHAOS/
-├── CMakeLists.txt
-├── config/
-│   └── setup.json          # magnet positions, valley points, homography, thresholds
-├── src/
-│   ├── main.cpp            # CLI: --video <file> --config <file>
-│   ├── video_source.{h,cpp}    # VideoCapture wrapper (file now, webcam-ready interface)
-│   ├── calibrate.{h,cpp}       # 3-corner click → perspective warp
-│   ├── tracker.{h,cpp}         # bob detection + tracking per frame
-│   ├── state_machine.{h,cpp}   # SWINGING ↔ SETTLED logic
-│   ├── valleys.{h,cpp}         # valley config + Euclidean classification
-│   └── logger.{h,cpp}          # CSV output + trajectory dump
-├── tools/ (phase 2)
-│   └── basin_map.cpp       # renders basin map from results CSV
-└── data/                   # results.csv, trajectories/*.csv
+## 3. Videos tab: proper results UI
+- After analysis, render **result cards** instead of the terminal log: video name, valid/invalid badge with reason, start → end, captured magnet (colored), distance, duration, detection %, and a **mini trajectory canvas** (path drawn from the trajectory CSV).
+- Raw terminal log moves into a collapsed `<details>` block for debugging.
 
-## Build stages
+## 4. Fallback prediction for invalid recordings
+- One shared JS simulation step function used by the simulator, basin map, and predictor (single source of truth).
+- **Auto-tuning ("optimally"):** grid-search attraction strength × damping scored against the *valid* runs (predicted magnet == observed magnet); best parameters are used for predictions and displayed.
+- Runs tab button **"Simulate predictions for invalid runs"**: for each invalid run that has a measured start point, simulate the path (dashed, drawn on the canvas) and show the predicted magnet in a new table column.
+- **Append to results.csv** (your choice): new endpoint `POST /api/append_prediction` writes the prediction as an extra row — video name gets `[SIMULATED]`, the note records the tuned parameters; real rows untouched. Results.csv schema otherwise unchanged.
 
-**Stage 1 — Calibration (interactive, once per setup)**
-- Open a video frame; user clicks the 3 corners of the triangular board.
-- Tool computes and saves the perspective-transform matrix to config/setup.json.
-- Then user clicks each magnet's center; tool computes valley points as midpoints between adjacent magnets (3 magnets → 3 valleys) and saves them.
-- Thresholds (settle speed, quiet duration, bob color/size) live in the same config, tunable without recompiling.
+## 5. Photo analysis (upload → layout → simulated path + expected stop)
+- **C++:** new executable `pendulum-photo` (reuses autocal's detection helpers): loads an image, finds the hub + 3 magnets (single-frame version of the video detection: color band, area, dark-ring, bright-core, equilateral+hub-centered triple scoring), computes the affine photo → canonical layout, writes JSON, and saves an annotated preview.
+- **server.py:** `POST /api/photo` (raw image upload) → saves to `data/uploads/`, runs the tool, returns detected positions + annotated image.
+- **Frontend:** new **Photo tab** — upload a top-down photo of the board → detected magnets drawn on your photo → **click the drop point** on the photo → the predicted path is simulated in canonical space and drawn back onto the photo, with the expected stopping magnet highlighted and stats shown.
 
-**Stage 2 — Bob detection & tracking**
-- Convert each warped frame to HSV; detect bob by color (cv::inRange + largest contour + centroid). Recommended: high-saturation bob color (red/orange), or brightness threshold since the board is dark.
-- Fallback: background subtraction (MOG2) if color tracking proves unreliable.
-- Record (x, y, timestamp, detected/lost) every frame; smooth with a small moving average; interpolate gaps ≤ 5 frames.
-- Output: per-run trajectory CSV (pixel coords + warped coordinates).
+## Verification
+Rebuild C++, restart server, then browser-test everything: runs-tab interactions and trajectory view, prediction on the currently invalid runs, videos-tab result cards, and the photo tab using a frame extracted from one of your videos as the test photo. Commit at the end.
 
-**Stage 3 — State machine**
-- Velocity = displacement between consecutive warped points / dt.
-- SWINGING until speed stays below settle_speed_px_s for settle_window_s (default 2–3 s), then SETTLED. Reset to SWINGING if speed spikes after settling.
-- Flag degenerate runs (bob never detected, or lost > 20% of frames) as invalid instead of logging garbage.
-
-**Stage 4 — Classification & logging**
-- Once SETTLED: average position over last N frames = final point.
-- Euclidean distance to each valley; nearest valley = winner.
-- Append to data/results.csv: run_id, video_file, start_x, start_y, end_x, end_y, valley_id, distance, duration_s, valid.
-- Live debug overlay window (warped feed + trail + valley markers), togglable with --debug.
-
-**Stage 5 — Verification & polish**
-- Test against the provided clip; tune HSV thresholds on real frames.
-- Batch mode: --videos data/*.mp4.
-- (Phase 2, after MVP works) basin_map.cpp: plot each run's start point colored by its valley.
-
-## Dependencies
-- OpenCV 4 (brew install opencv), CMake ≥ 3.16, C++17.
-
-## Out of scope (for now)
-- Physics simulation, live webcam mode (interface leaves room for it), automatic magnet detection.
+**Notes:** results.csv schema stays unchanged (predictions are appended rows marked `[SIMULATED]`). Predictions assume the canonical (group-1) magnet layout — if you move the magnets, re-record and the autocal refresh handles it.

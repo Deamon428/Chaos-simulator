@@ -23,3 +23,23 @@ run_id,video,start_x,start_y,end_x,end_y,magnet_id,dist_px,duration_s,detection_
 22,WhatsApp Video 2026-10-26 at 19.54.03.mp4,490.737,208.263,489.798,207.653,1,89.22,40.361,0.059455,0,settled at video end
 23,WhatsApp Video 2026-10-26 at 19.54.23.mp4,315.597,286.056,334.852,374.278,1,139.813,49.3669,0.177564,0,unsettled at end of video; rest point far from all magnets (attraction not engaged or no drop)
 24,physics-input.mp4,409,567.074,366.065,587.074,2,111.305,36.6309,0.974522,0,rest point far from all magnets (attraction not engaged or no drop)
+25,WhatsApp Video 2026-10-26 at 19.39.48.mp4 [SIMULATED],415.981,247.725,439.25804480279436,281.28841129890304,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+26,WhatsApp Video 2026-10-26 at 19.42.49.mp4 [SIMULATED],368.26,271.221,438.63099027059457,280.8261946689581,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+27,WhatsApp Video 2026-10-26 at 19.42.50.mp4 [SIMULATED],455.584,482.381,439.40727235916313,281.46123940640416,1,1,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+28,WhatsApp Video 2026-10-26 at 19.42.51.mp4 [SIMULATED],391.688,263.491,439.28427990535545,281.3247390461746,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+29,WhatsApp Video 2026-10-26 at 19.42.53 (1).mp4 [SIMULATED],367.837,263.211,439.3345810845073,281.3747258931125,1,1,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+30,WhatsApp Video 2026-10-26 at 19.54.03.mp4 [SIMULATED],490.737,208.263,439.319713447198,281.3621704967201,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+31,WhatsApp Video 2026-10-26 at 19.54.23.mp4 [SIMULATED],315.597,286.056,439.20231384304793,281.2332235693053,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+32,physics-input.mp4 [SIMULATED],409,567.074,412.39113676476353,688.1251637846153,2,1,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+33,WhatsApp Video 2026-10-26 at 19.39.48.mp4 [SIMULATED],415.981,247.725,439.25804480279436,281.28841129890304,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+34,WhatsApp Video 2026-10-26 at 19.42.49.mp4 [SIMULATED],368.26,271.221,438.63099027059457,280.8261946689581,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+35,WhatsApp Video 2026-10-26 at 19.39.48.mp4 [SIMULATED],415.981,247.725,439.25804480279436,281.28841129890304,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+36,WhatsApp Video 2026-10-26 at 19.42.49.mp4 [SIMULATED],368.26,271.221,438.63099027059457,280.8261946689581,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+37,WhatsApp Video 2026-10-26 at 19.42.50.mp4 [SIMULATED],455.584,482.381,439.40727235916313,281.46123940640416,1,1,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+38,WhatsApp Video 2026-10-26 at 19.42.51.mp4 [SIMULATED],391.688,263.491,439.28427990535545,281.3247390461746,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+39,WhatsApp Video 2026-10-26 at 19.42.53 (1).mp4 [SIMULATED],367.837,263.211,439.3345810845073,281.3747258931125,1,1,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+40,WhatsApp Video 2026-10-26 at 19.54.03.mp4 [SIMULATED],490.737,208.263,439.319713447198,281.3621704967201,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+41,WhatsApp Video 2026-10-26 at 19.54.23.mp4 [SIMULATED],315.597,286.056,439.20231384304793,281.2332235693053,1,0,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+42,physics-input.mp4 [SIMULATED],409,567.074,412.39113676476353,688.1251637846153,2,1,0,1.0,1,"simulated prediction (F=4, c=0.1)"
+43,WhatsApp Video 2026-10-26 at 19.42.50.mp4,305.858,546.249,307.525,549.586,2,174.021,2.5663,1,0,rest point far from all magnets (attraction not engaged or no drop)
+44,WhatsApp Video 2026-10-26 at 19.42.50.mp4,305.858,546.249,307.525,549.586,2,174.021,2.5663,1,0,rest point far from all magnets (attraction not engaged or no drop)

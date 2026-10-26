@@ -82,6 +82,29 @@ real-runs basin map + results table + calibration gallery, and one-click video
 analysis. Phase-2 basin map is effectively covered by the web UI (real points
 on the Runs tab; theoretical map in the simulator).
 
+## Session 2026-10-27 (later): fixes + prediction/photo features
+
+- **User-reported bugs fixed:** runs-tab refresh now visibly updates (stamp +
+  counts) with row↔dot click linking, invalid filter, and trajectory drawing on
+  selection; damping default reduced to 0.25 (force 12); Videos tab renders
+  result cards (badge, stats, mini trajectory canvas) with the raw log
+  collapsed; server TRACKER constant restored (analyze was 500ing) and
+  Cache-Control: no-store everywhere.
+- **New C++ tool `pendulum-photo`:** single-image magnet+hub detection with
+  triple scoring against the rig's hub-distance FINGERPRINT (sorted normalized
+  hub-dists — floor junk can't match it). OpenCV 5 gotchas: 2-arg
+  invertAffineTransform, 2x3 affine for it, 3x3 composition order.
+- **Prediction engine (web):** shared physicsStep for sim/basin/predictor;
+  grid auto-tune vs valid runs; invalid runs simulated from their measured
+  start points; "Save predictions to CSV" appends [SIMULATED] rows.
+- **Photo tab (web):** upload top-down photo → /api/photo → markers on the
+  photo → click drop point → predicted path + expected stop drawn on the photo.
+  LIMITATION: all 3 magnets must be visible (a bob resting on one occludes it —
+  verified fingerprint scoring still fails when 2 true magnets + 1 lucky junk
+  blob is all there is).
+- results.csv currently contains test duplicates + [SIMULATED] rows from
+  verification; delete it and re-run the batch for a clean slate.
+
 ## Next steps
 
 1. Re-record with ATTRACTION: string short enough that the bob reaches the

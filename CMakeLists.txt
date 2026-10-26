@@ -32,7 +32,15 @@ add_executable(pendulum-calibrate
   src/valleys.cpp
 )
 
-foreach(target pendulum-track pendulum-calibrate)
+add_executable(pendulum-photo
+  src/photo_main.cpp
+  src/autocal.cpp
+  src/video_source.cpp
+  src/config.cpp
+  src/valleys.cpp
+)
+
+foreach(target pendulum-track pendulum-calibrate pendulum-photo)
   target_include_directories(${target} PRIVATE src ${OpenCV_INCLUDE_DIRS})
   target_link_libraries(${target} PRIVATE ${OpenCV_LIBS})
 endforeach()

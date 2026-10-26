@@ -23,3 +23,17 @@ struct AutoCalResult {
 // the phone was held rotated relative to the board).
 AutoCalResult autoCalibrate(const std::string& video_path, const SetupConfig& cfg,
                             int label_offset, int first_frame = 0);
+
+struct PhotoCalResult {
+    bool ok = false;
+    std::string error;
+    cv::Mat homography;                    // photo px -> canonical board px (3x3)
+    std::vector<cv::Point2d> magnets_image;  // detected magnets, photo pixels
+    cv::Point2d hub_image;
+    cv::Mat annotated;                     // photo with markers drawn
+};
+
+// Single-image variant: detects the hub + 3 magnets on a top-down photo of
+// the board and returns the affine mapping photo -> canonical layout.
+PhotoCalResult photoCalibrate(const cv::Mat& image, const SetupConfig& cfg,
+                              int label_offset);

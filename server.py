@@ -18,6 +18,7 @@ Endpoints:
 import csv
 import json
 import subprocess
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -28,6 +29,9 @@ VIDEOS = ROOT / "Videos"
 DATA = ROOT / "data"
 RESULTS = DATA / "results.csv"
 DUMPS = DATA / "dumps"
+TRAJ = DATA / "trajectories"
+UPLOADS = DATA / "uploads"
+PHOTO_TOOL = ROOT / "build" / "pendulum-photo"
 TRACKER = ROOT / "build" / "pendulum-track"
 VIDEO_EXTS = {".mp4", ".mov", ".avi", ".mkv"}
 ANALYZE_TIMEOUT_S = 900
@@ -58,6 +62,69 @@ def list_images():
     if not DUMPS.exists():
         return []
     return sorted(p.name for p in DUMPS.iterdir() if p.suffix.lower() == ".png")
+
+
+def list_trajectories():
+    if not TRAJ.exists():
+        return []
+    return sorted(p.name for p in TRAJ.iterdir() if p.suffix.lower() == ".csv")
+
+
+def next_run_id():
+    if not RESULTS.exists():
+        return 1
+    top = 0
+    with RESULTS.open(newline="") as f:
+        for row in csv.DictReader(f):
+            try:
+                top = max(top, int(row["run_id"]))
+            except (ValueError, KeyError):
+                pass
+    return top + 1
+
+
+def append_prediction(payload):
+    """Append a simulated-prediction row to results.csv. Real rows untouched."""
+    UPLOADS.mkdir(exist_ok=True)
+    vid = str(payload.get("video", "unknown")) + " [SIMULATED]"
+    note = "simulated prediction (" + str(payload.get("params", "default params")) + ")"
+    row = [next_run_id(), vid,
+           payload.get("start_x", -1), payload.get("start_y", -1),
+           payload.get("end_x", -1), payload.get("end_y", -1),
+           payload.get("magnet_id", -1), payload.get("dist_px", -1),
+           payload.get("duration_s", 0), 1.0, 1, note]
+    new_file = not RESULTS.exists()
+    with RESULTS.open("a", newline="") as f:
+        w = csv.writer(f)
+        if new_file:
+            w.writerow(["run_id", "video", "start_x", "start_y", "end_x", "end_y",
+                        "magnet_id", "dist_px", "duration_s", "detection_ratio",
+                        "valid", "note"])
+        w.writerow(row)
+    return row[0]
+
+
+def run_photo(image_bytes, ext):
+    if not PHOTO_TOOL.exists():
+        return False, {"error": "pendulum-photo not built — run: cmake --build build"}
+    UPLOADS.mkdir(exist_ok=True)
+    DUMPS.mkdir(exist_ok=True)
+    ts = time.strftime("%Y%m%d_%H%M%S")
+    upload = UPLOADS / f"upload_{ts}{ext}"
+    upload.write_bytes(image_bytes)
+    out_json = UPLOADS / f"photo_{ts}.json"
+    annotated = DUMPS / f"photo_{ts}.png"
+    proc = subprocess.run(
+        [str(PHOTO_TOOL), "--image", str(upload), "--out", str(out_json),
+         "--annotated", str(annotated)],
+        capture_output=True, text=True, timeout=120, cwd=str(ROOT))
+    if not out_json.exists():
+        return False, {"error": "photo tool failed", "log": (proc.stdout + proc.stderr).strip()}
+    data = json.loads(out_json.read_text())
+    if data.get("ok"):
+        data["annotated"] = annotated.name
+        data["upload"] = upload.name
+    return data.get("ok", False), data
 
 
 def run_tracker(video_name):
@@ -118,6 +185,15 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, {"videos": list_videos()})
         elif route.path == "/api/results":
             self._send(200, {"rows": results_rows()})
+        elif route.path == "/api/trajectories":
+            self._send(200, {"files": list_trajectories()})
+        elif route.path == "/api/traj":
+            name = Path(parse_qs(route.query).get("name", [""])[0]).name
+            path = TRAJ / name
+            if path.suffix.lower() == ".csv" and path.exists():
+                self._send(200, path.read_bytes(), "text/csv; charset=utf-8")
+            else:
+                self._send(404, {"error": "no such trajectory"})
         elif route.path == "/api/images":
             self._send(200, {"images": list_images()})
         elif route.path == "/img":
@@ -131,18 +207,38 @@ class Handler(BaseHTTPRequestHandler):
             self._send(404, {"error": "not found"})
 
     def do_POST(self):
-        if urlparse(self.path).path != "/api/analyze":
-            self._send(404, {"error": "not found"})
-            return
+        route = urlparse(self.path).path
         length = int(self.headers.get("Content-Length", 0))
-        try:
-            video = json.loads(self.rfile.read(length) or b"{}").get("video", "")
-        except json.JSONDecodeError:
-            video = ""
-        code, log = run_tracker(video)
-        self._send(200, {"ok": code == 0, "log": log,
-                         "results": results_rows(),
-                         "images": list_images()})
+        body = self.rfile.read(length) if length else b""
+        if route == "/api/analyze":
+            try:
+                video = json.loads(body or b"{}").get("video", "")
+            except json.JSONDecodeError:
+                video = ""
+            code, log = run_tracker(video)
+            self._send(200, {"ok": code == 0, "log": log,
+                             "results": results_rows(),
+                             "images": list_images()})
+        elif route == "/api/photo":
+            ctype = self.headers.get("Content-Type", "image/jpeg")
+            ext = {"image/jpeg": ".jpg", "image/jpg": ".jpg",
+                   "image/png": ".png", "image/webp": ".webp"}.get(ctype, ".jpg")
+            if not body:
+                self._send(400, {"error": "empty upload"})
+                return
+            ok, data = run_photo(body, ext)
+            self._send(200, {**data, "ok": ok})
+        elif route == "/api/append_prediction":
+            try:
+                payload = json.loads(body or b"{}")
+            except json.JSONDecodeError:
+                self._send(400, {"error": "bad json"})
+                return
+            run_id = append_prediction(payload)
+            self._send(200, {"ok": True, "run_id": run_id,
+                             "results": results_rows()})
+        else:
+            self._send(404, {"error": "not found"})
 
     def log_message(self, fmt, *args):  # quieter console
         if "/api/analyze" not in (args[0] if args else ""):
