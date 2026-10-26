@@ -82,6 +82,17 @@ def run_tracker(video_name):
         return 1, f"timed out after {ANALYZE_TIMEOUT_S}s"
 
 
+class QuietServer(ThreadingHTTPServer):
+    # A browser tab reloading/closing mid-response raises BrokenPipeError in
+    # the handler thread; that is normal and must not spam the terminal.
+    def handle_error(self, request, client_address):
+        import sys
+        exc = sys.exc_info()[1]
+        if isinstance(exc, (BrokenPipeError, ConnectionResetError)):
+            return
+        super().handle_error(request, client_address)
+
+
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, body, ctype="application/json"):
         data = body if isinstance(body, bytes) else json.dumps(body).encode()
@@ -90,7 +101,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        self.wfile.write(data)
+        try:
+            self.wfile.write(data)
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # client went away mid-response
 
     def do_GET(self):
         route = urlparse(self.path)
@@ -136,7 +150,14 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    server = ThreadingHTTPServer(("127.0.0.1", 8000), Handler)
+    try:
+        server = QuietServer(("127.0.0.1", 8000), Handler)
+    except OSError as e:
+        if e.errno in (48, 98):  # address already in use
+            print("port 8000 is busy — another server.py is probably running.\n"
+                  "stop it with:  kill $(lsof -ti :8000)\nthen start this one again.")
+            raise SystemExit(1)
+        raise
     print("Magnetic Pendulum Lab -> http://localhost:8000  (Ctrl-C to stop)")
     try:
         server.serve_forever()
