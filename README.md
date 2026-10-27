@@ -123,7 +123,3 @@ Also:
 
 Writes `config/setup.json`; `pendulum-track` then runs without `--autocal`.
 
-## Phase 2 (not yet built)
-
-`tools/basin_map.cpp` — plot each run's start point colored by the magnet that
-captured it, to render the basin-of-attraction map once enough valid runs exist.
