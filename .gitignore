@@ -5,4 +5,5 @@ data/dumps/
 data/inspect/
 data/uploads/
 __pycache__/
+compile_commands.json
 *.mp4
