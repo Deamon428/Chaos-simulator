@@ -1,927 +1,1534 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Magnetic Pendulum Lab</title>
-<style>
-  :root { --bg:#12141a; --panel:#1b1e27; --line:#2a2e3b; --fg:#e8eaf0; --dim:#9aa0b0; }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg);
-         font:15px/1.5 -apple-system, "Segoe UI", sans-serif; }
-  header { display:flex; align-items:baseline; gap:24px; padding:14px 22px;
-           border-bottom:1px solid var(--line); flex-wrap:wrap; }
-  h1 { font-size:19px; margin:0; }
-  nav { display:flex; gap:8px; flex-wrap:wrap; }
-  nav button { background:none; border:1px solid var(--line); color:var(--dim);
-               padding:6px 14px; border-radius:8px; cursor:pointer; font-size:14px; }
-  nav button.active { color:var(--fg); border-color:#4a5068; background:var(--panel); }
-  #errbar { background:#5c1a1a; color:#ffb4b4; padding:8px 22px; font-size:13px;
-            border-bottom:1px solid #7c2a2a; display:none; white-space:pre-wrap; }
-  main { padding:18px 22px; display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
-  section[hidden] { display:none; }
-  canvas { background:#0b0c10; border:1px solid var(--line); border-radius:8px;
-           max-width:640px; width:100%; height:auto; touch-action:none; }
-  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px;
-           padding:14px 16px; min-width:300px; flex:1; }
-  .row { display:flex; align-items:center; gap:10px; margin:8px 0; flex-wrap:wrap; }
-  input[type=range] { flex:1; min-width:120px; }
-  .val { width:52px; text-align:right; color:var(--dim); font-variant-numeric:tabular-nums; }
-  button.act { background:#3b4a86; color:#fff; border:0; padding:8px 14px;
-               border-radius:8px; cursor:pointer; font-size:14px; }
-  button.act:disabled { opacity:.45; cursor:default; }
-  button.ghost { background:#444a5c; }
-  table { border-collapse:collapse; width:100%; font-size:13px; }
-  th, td { border-bottom:1px solid var(--line); padding:5px 8px; text-align:left;
-           white-space:nowrap; }
-  th { color:var(--dim); font-weight:600; }
-  td.ok { color:#7ce38b; } td.bad { color:#ff8080; }
-  tr.selected { background:#242a3c; cursor:pointer; }
-  tbody tr { cursor:pointer; }
-  pre { background:#0b0c10; border:1px solid var(--line); border-radius:8px;
-        padding:12px; max-height:240px; overflow:auto; font-size:12px; }
-  .muted { color:var(--dim); font-size:13px; }
-  .videoItem { display:flex; align-items:center; justify-content:space-between;
-               gap:10px; padding:7px 0; border-bottom:1px solid var(--line); }
-  .videoItem span { overflow:hidden; text-overflow:ellipsis; }
-  #gallery img { width:100%; margin:8px 0; border-radius:8px; border:1px solid var(--line); }
-  .legend { display:flex; gap:14px; margin:8px 0; font-size:13px; flex-wrap:wrap; }
-  .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; }
-  .card { background:var(--bg); border:1px solid var(--line); border-radius:10px;
-          padding:10px 12px; margin:10px 0; }
-  .card canvas { max-width:220px; float:right; margin-left:12px; }
-  .badge { padding:2px 8px; border-radius:6px; font-size:12px; }
-  .badge.ok { background:#1d3a24; color:#7ce38b; }
-  .badge.bad { background:#421d1d; color:#ff8080; }
-  .badge.sim { background:#3a2f1d; color:#ffd97c; }
-  details summary { cursor:pointer; color:var(--dim); font-size:13px; margin:8px 0; }
-  .stats { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
-  .stat { background:var(--bg); border:1px solid var(--line); border-radius:10px;
-          padding:8px 6px; text-align:center; }
-  .stat b { display:block; font-size:22px; }
-  .stat span { color:var(--dim); font-size:12px; }
-  .step { display:flex; gap:10px; margin:9px 0; align-items:flex-start; }
-  .stepnum { background:#3b4a86; color:#fff; border-radius:50%; min-width:24px;
-             height:24px; display:flex; align-items:center; justify-content:center;
-             font-size:13px; font-weight:600; }
-  .caption { background:#20263a; border:1px solid #3b4a86; border-radius:8px;
-             padding:9px 12px; margin:8px 0; font-size:14px; min-height:20px; }
-</style>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>CHAOS – Magnetic Pendulum Lab</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#1a1b22",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "error": "#ffb4ab",
+                        "inverse-primary": "#006877",
+                        "primary-container": "#22d3ee",
+                        "secondary": "#c6c6cf",
+                        "surface-variant": "#33343c",
+                        "on-surface-variant": "#bbc9cd",
+                        "on-surface": "#e3e1ec",
+                        "surface-tint": "#2fd9f4",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface": "#12131a",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-container-highest": "#33343c",
+                        "secondary-container": "#45464e",
+                        "primary": "#8aebff",
+                        "on-secondary-container": "#b4b4bd",
+                        "on-error": "#690005",
+                        "surface-container-low": "#1a1b22",
+                        "on-secondary-fixed-variant": "#45464e",
+                        "tertiary": "#68f5b8",
+                        "on-primary-container": "#005763",
+                        "inverse-surface": "#e3e1ec",
+                        "outline": "#859397",
+                        "on-primary-fixed-variant": "#004e5a",
+                        "on-primary-fixed": "#001f25",
+                        "surface-container": "#1e1f26",
+                        "surface-container-lowest": "#0d0e15",
+                        "on-tertiary-container": "#005a3d",
+                        "on-tertiary": "#003824",
+                        "secondary-fixed-dim": "#c6c6cf",
+                        "outline-variant": "#3c494c",
+                        "surface-container-high": "#292931",
+                        "primary-fixed-dim": "#2fd9f4",
+                        "on-primary": "#00363e",
+                        "on-background": "#e3e1ec",
+                        "primary-fixed": "#a2eeff",
+                        "tertiary-container": "#46d89d",
+                        "surface-bright": "#383941",
+                        "background": "#12131a",
+                        "error-container": "#93000a",
+                        "on-secondary": "#2f3037",
+                        "on-tertiary-fixed": "#002113",
+                        "surface-dim": "#12131a",
+                        "on-error-container": "#ffdad6",
+                        "inverse-on-surface": "#2f3038",
+                        "secondary-fixed": "#e2e1eb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "space-sm": "0.5rem",
+                        "margin": "1rem",
+                        "space-xs": "0.25rem",
+                        "margin-desktop": "1.5rem",
+                        "gutter": "0.75rem",
+                        "space-lg": "1rem",
+                        "space-xl": "1.5rem",
+                        "space-md": "0.75rem",
+                        "gutter-desktop": "1rem"
+                    },
+                    "fontFamily": {
+                        "label-md": ["JetBrains Mono"],
+                        "code-inline": ["JetBrains Mono"],
+                        "body-sm": ["Geist"],
+                        "body-lg": ["Geist"],
+                        "headline-md": ["Geist"],
+                        "label-sm": ["JetBrains Mono"],
+                        "body-md": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "headline-sm": ["Geist"],
+                        "headline-xl": ["Geist"]
+                    },
+                    "fontSize": {
+                        "label-md": ["0.8125rem", { "lineHeight": "1.125rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "code-inline": ["0.8125rem", { "lineHeight": "1.25rem", "fontWeight": "400" }],
+                        "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "fontWeight": "400" }],
+                        "body-lg": ["1rem", { "lineHeight": "1.5rem", "fontWeight": "400" }],
+                        "headline-md": ["1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.015em", "fontWeight": "500" }],
+                        "label-sm": ["0.6875rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "400" }],
+                        "body-md": ["0.875rem", { "lineHeight": "1.375rem", "fontWeight": "400" }],
+                        "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-sm": ["1rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "headline-xl": ["2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.025em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            font-size: 18px;
+            line-height: 1;
+            display: inline-block;
+        }
+
+        .grid-pattern {
+            background-size: 24px 24px;
+            background-image:
+                linear-gradient(to right, rgba(60, 73, 76, 0.22) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(60, 73, 76, 0.22) 1px, transparent 1px);
+        }
+
+        .radial-glow {
+            background: radial-gradient(circle at center, rgba(34, 211, 238, 0.08) 0%, transparent 70%);
+        }
+
+        .optical-grid {
+            background-image:
+                linear-gradient(to right, rgba(60, 73, 76, 0.25) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(60, 73, 76, 0.25) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        .optical-fine-grid {
+            background-image:
+                linear-gradient(to right, rgba(138, 235, 255, 0.08) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(138, 235, 255, 0.08) 1px, transparent 1px);
+            background-size: 8px 8px;
+        }
+
+        /* Canvas scales to fill its container but preserves native resolution for JS coordinate math */
+        canvas.physics-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            touch-action: none;
+            background: #0b0c10;
+        }
+
+        /* Friendly table styles used by runsTable / techTable / videoList */
+        .data-table { border-collapse: collapse; width: 100%; font-size: 13px; }
+        .data-table th, .data-table td {
+            border-bottom: 1px solid #3c494c;
+            padding: 5px 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .data-table th { color: #859397; font-weight: 600; }
+        .data-table td.ok { color: #7ce38b; }
+        .data-table td.bad { color: #ff8080; }
+        .data-table tr.selected { background: #242a3c; }
+        .data-table tbody tr { cursor: pointer; }
+
+        .badge { padding: 2px 8px; border-radius: 6px; font-size: 12px; }
+        .badge.ok  { background: #1d3a24; color: #7ce38b; }
+        .badge.bad { background: #421d1d; color: #ff8080; }
+        .badge.sim { background: #3a2f1d; color: #ffd97c; }
+
+        .card-mini { background: #0d0e15; border: 1px solid #3c494c; border-radius: 10px; padding: 10px 12px; margin: 8px 0; }
+        .card-mini canvas { max-width: 220px; float: right; margin-left: 12px; }
+
+        .step { display: flex; gap: 10px; margin: 9px 0; align-items: flex-start; }
+        .stepnum { background: #22d3ee; color: #00363e; border-radius: 50%; min-width: 20px;
+                   height: 20px; display: flex; align-items: center; justify-content: center;
+                   font-size: 11px; font-weight: 700; flex-shrink: 0; }
+
+        .caption { background: #1e1f26; border: 1px solid #3c494c; border-radius: 8px;
+                   padding: 9px 12px; margin: 8px 0; font-size: 13px; color: #bbc9cd; min-height: 20px; }
+
+        pre#log { background: #0d0e15; border: 1px solid #3c494c; border-radius: 8px;
+                  padding: 12px; max-height: 220px; overflow: auto; font-size: 11px;
+                  color: #bbc9cd; font-family: "JetBrains Mono", monospace; }
+
+        .videoItem { display: flex; align-items: center; justify-content: space-between;
+                     gap: 10px; padding: 8px 0; border-bottom: 1px solid #3c494c; }
+        .videoItem span { overflow: hidden; text-overflow: ellipsis; font-size: 13px; color: #e3e1ec; }
+
+        #gallery img { width: 100%; margin: 8px 0; border-radius: 8px; border: 1px solid #3c494c; }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #12131a; }
+        ::-webkit-scrollbar-thumb { background: #292931; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3c494c; }
+
+        /* Hidden tab sections */
+        [data-tab-panel].hidden { display: none !important; }
+
+        /* Nav active state */
+        nav [data-nav-btn].nav-active {
+            background-color: #33343c;
+            color: #8aebff;
+            font-weight: 500;
+        }
+        nav [data-nav-btn].nav-active .nav-icon { color: #8aebff; }
+        nav [data-nav-btn]:not(.nav-active) { color: #bbc9cd; }
+        nav [data-nav-btn]:not(.nav-active) .nav-icon { color: #bbc9cd; }
+    </style>
 </head>
-<body>
-<header>
-  <h1>🧲 Magnetic Pendulum Lab</h1>
-  <nav>
-    <button data-tab="sim" class="active">Simulator</button>
-    <button data-tab="runs">Real runs &amp; basin map</button>
-    <button data-tab="videos">Videos</button>
-    <button data-tab="photo">Photo</button>
-  </nav>
-</header>
-<div id="errbar"></div>
-<main>
 
-<!-- ============ SIMULATOR ============ -->
-<section id="tab-sim">
-  <canvas id="sim" width="800" height="800"></canvas>
-  <div class="panel">
-    <div class="row"><b>Simulated pendulum</b>
-      <span class="muted">drag the bob anywhere, release to drop</span></div>
-    <div class="row"><label>Attraction strength</label>
-      <input type="range" id="force" min="2" max="25" step="0.5" value="12">
-      <span class="val" id="forceVal">12</span></div>
-    <div class="row"><label>Damping</label>
-      <input type="range" id="damp" min="0" max="2" step="0.05" value="0.25">
-      <span class="val" id="dampVal">0.25</span></div>
-    <div class="row"><label>String length</label>
-      <input type="range" id="len" min="150" max="600" step="5" value="380">
-      <span class="val" id="lenVal">380</span></div>
-    <div class="row">
-      <button class="act" id="basinBtn">Compute basin map</button>
-      <button class="act" id="clearBtn" class="ghost" style="background:#444a5c">Clear map</button>
-    </div>
-    <div class="row"><span id="live" class="muted" style="font-variant-numeric:tabular-nums"></span></div>
-    <div class="row"><span id="simStatus" class="muted">Drag the bob and release to drop it.</span></div>
-    <div class="legend">
-      <span><span class="dot" style="background:#ff5555"></span>M0</span>
-      <span><span class="dot" style="background:#50fa7b"></span>M1</span>
-      <span><span class="dot" style="background:#bd93f9"></span>M2</span>
-      <span><span class="dot" style="background:#666"></span>no capture</span>
-    </div>
-    <p class="muted">Theory side: a lightly-damped bob attracted by three magnets on the
-    triangular board, hanging from the hub on a string. Chaos shows up as tiny
-    start-position changes flipping the final magnet — compute the basin map to see
-    the fractal boundary.</p>
-  </div>
-</section>
+<body class="bg-surface-container-lowest text-on-surface flex h-screen w-screen overflow-hidden select-none">
 
-<!-- ============ REAL RUNS ============ -->
-<section id="tab-runs" hidden>
-  <div style="flex:1.15; min-width:340px">
-    <canvas id="basin" width="800" height="800"></canvas>
-    <div class="row">
-      <label class="muted"><input type="checkbox" id="zoneToggle" checked>
-        show predicted zones (simulation)</label>
-      <label class="muted"><input type="checkbox" id="hideInvalid">
-        successful drops only</label>
-    </div>
-    <div class="row"><span id="runsInfo" class="muted"></span></div>
-  </div>
-  <div class="panel" style="max-width:560px">
-    <h2 style="font-size:18px; margin:4px 0 8px">Real drops on our magnetic board</h2>
-    <p style="margin:6px 0">We release the pendulum bob from different spots on the
-    triangular board. It swings, and one of the three magnets <b>catches</b> it.
-    Every dot on the map is one real drop: <b>where the dot is</b> = where we let the
-    bob go, <b>the dot's color</b> = which magnet won.</p>
-    <div class="legend">
-      <span><span class="dot" style="background:#ff5555"></span>caught by M0 (left)</span>
-      <span><span class="dot" style="background:#50fa7b"></span>caught by M1 (top)</span>
-      <span><span class="dot" style="background:#bd93f9"></span>caught by M2 (bottom)</span>
-      <span><span class="dot" style="background:#777"></span>recording failed</span>
-    </div>
-    <div class="stats" id="statCards"></div>
-    <div class="caption" id="dropCaption">Click any dot (or a row below) to see the
-    path the bob took for that drop.</div>
-    <div class="row" style="margin-top:12px"><b>How the software measures a drop</b></div>
-    <div class="step"><div class="stepnum">1</div><div>A phone camera films the board
-      from above while we release the bob.</div></div>
-    <div class="step"><div class="stepnum">2</div><div>The software finds the three
-      magnets and the center hub in the video automatically — no manual marking.</div></div>
-    <div class="step"><div class="stepnum">3</div><div>It follows the white bob in
-      every single frame and measures exactly where it stops.</div></div>
-    <div class="step"><div class="stepnum">4</div><div>The nearest magnet to the stopping
-      point wins, and the drop is added to the map above.</div></div>
-    <div class="row" style="margin-top:12px"><b>When a recording fails</b></div>
-    <p class="muted" style="margin:4px 0">Sometimes a recording can't be measured (the
-    bob hides a magnet, or the camera shakes). Then the computer <b>simulates what
-    would have happened</b> using the physics model — dashed golden arrows on the map.
-    These predictions are clearly marked and never mixed with real measurements.</p>
-    <div class="row">
-      <button class="act" id="refreshRuns">Reload data</button>
-      <button class="act" id="predictBtn">Fill failed drops by simulation</button>
-      <button class="act ghost" id="appendBtn">Save simulated results</button>
-    </div>
-    <div id="runsTable"></div>
-    <details><summary>Technical details &amp; calibration images</summary>
-      <div id="techTable"></div>
-      <div class="row"><b>Calibration previews</b>
-      <span class="muted">the software's guess of the magnet positions (red circles)
-      on one video frame — they must sit on the real magnets</span></div>
-      <div id="gallery"></div>
-    </details>
-  </div>
-</section>
+    <!-- ===================================================================== -->
+    <!-- COLUMN 1: LEFT NAVIGATION SIDEBAR                                     -->
+    <!-- ===================================================================== -->
+    <aside class="h-screen w-60 flex flex-col justify-between shrink-0 bg-surface-container-low border-r border-outline-variant">
+        <div class="flex flex-col h-full justify-between p-space-md">
+            <div>
+                <!-- Brand Header -->
+                <div class="flex items-center gap-space-sm pb-space-md border-b border-outline-variant mb-space-md">
+                    <div class="w-7 h-7 rounded-DEFAULT bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary">
+                        <span class="text-sm">🧲</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-headline-sm font-headline-sm font-medium text-on-surface tracking-tight">CHAOS</span>
+                        <span class="text-label-sm font-label-sm text-outline">v1.1 Telemetry Core</span>
+                    </div>
+                </div>
 
-<!-- ============ VIDEOS ============ --></section>
+                <!-- Navigation Tab Cluster -->
+                <nav aria-label="Main Navigation" class="flex flex-col gap-space-xs">
+                    <!-- Simulator -->
+                    <button data-nav-btn data-tab="sim"
+                        class="nav-active flex items-center gap-space-sm px-3 py-1.5 rounded-DEFAULT text-label-md font-label-md transition-colors duration-150 text-left w-full">
+                        <span class="material-symbols-outlined nav-icon" data-icon="science">science</span>
+                        <span>Simulator</span>
+                        <span class="nav-dot ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-sm"></span>
+                    </button>
+                    <!-- Real runs & map -->
+                    <button data-nav-btn data-tab="runs"
+                        class="flex items-center gap-space-sm px-3 py-1.5 rounded-DEFAULT text-label-md font-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 active:bg-surface-variant text-left w-full">
+                        <span class="material-symbols-outlined nav-icon" data-icon="map">map</span>
+                        <span>Real runs &amp; map</span>
+                    </button>
+                    <!-- Videos -->
+                    <button data-nav-btn data-tab="videos"
+                        class="flex items-center gap-space-sm px-3 py-1.5 rounded-DEFAULT text-label-md font-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 active:bg-surface-variant text-left w-full">
+                        <span class="material-symbols-outlined nav-icon" data-icon="videocam">videocam</span>
+                        <span>Videos</span>
+                    </button>
+                    <!-- Photo -->
+                    <button data-nav-btn data-tab="photo"
+                        class="flex items-center gap-space-sm px-3 py-1.5 rounded-DEFAULT text-label-md font-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 active:bg-surface-variant text-left w-full">
+                        <span class="material-symbols-outlined nav-icon" data-icon="photo_camera">photo_camera</span>
+                        <span>Photo</span>
+                    </button>
+                </nav>
+            </div>
 
-<!-- ============ VIDEOS ============ -->
-<section id="tab-videos" hidden>
-  <div class="panel">
-    <div class="row"><b>Videos in Videos/</b>
-      <button class="act" id="analyzeAll">Analyze all</button>
-      <button class="act ghost" id="refreshVideos">Reload list</button></div>
-    <div id="videoList"><span class="muted">loading…</span></div>
-    <div id="cards"><span class="muted">Analyze a video to see its result here.</span></div>
-    <details><summary>raw analysis log</summary><pre id="log">Analysis log will appear here.</pre></details>
-  </div>
-</section>
+            <!-- Bottom System Controls -->
+            <div class="flex flex-col gap-space-xs pt-space-md border-t border-outline-variant">
+                <button
+                    class="w-full flex items-center justify-center gap-2 bg-primary-container text-on-primary-container font-headline-sm text-label-md px-3 py-1.5 rounded-DEFAULT font-medium hover:opacity-90 active:scale-[0.98] transition-all mb-2 shadow-none">
+                    <span class="material-symbols-outlined text-on-primary-container" data-icon="play_arrow">play_arrow</span>
+                    <span>Run Simulation</span>
+                </button>
+                <button
+                    class="flex items-center gap-space-sm px-3 py-1.5 text-on-surface-variant font-normal rounded-DEFAULT text-label-md font-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 text-left w-full">
+                    <span class="material-symbols-outlined text-on-surface-variant" data-icon="settings">settings</span>
+                    <span>Settings</span>
+                </button>
+                <button
+                    class="flex items-center gap-space-sm px-3 py-1.5 text-on-surface-variant font-normal rounded-DEFAULT text-label-md font-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 text-left w-full">
+                    <span class="material-symbols-outlined text-on-surface-variant" data-icon="menu_book">menu_book</span>
+                    <span>Documentation</span>
+                </button>
+            </div>
+        </div>
+    </aside>
 
-<!-- ============ PHOTO ============ -->
-<section id="tab-photo" hidden>
-  <canvas id="photo" width="640" height="480"></canvas>
-  <div class="panel">
-    <div class="row"><b>Photo analysis</b>
-      <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp"
-             style="color:var(--dim)"></div>
-    <div class="muted">Upload a top-down photo of the board (hub tape + 3 magnets
-    visible). The detected magnets are drawn on it; then <b>click anywhere on the
-    photo</b> to drop the pendulum there — the predicted path and the magnet it would
-    be captured by are drawn on the photo.</div>
-    <div class="row"><span id="photoStatus" class="muted">No photo uploaded yet.</span></div>
-    <div class="row"><span id="photoLive" class="muted" style="font-variant-numeric:tabular-nums"></span></div>
-  </div>
-</section>
+    <!-- ===================================================================== -->
+    <!-- COLUMN 2 + 3: Tab Panels (each is full-width flex row)                -->
+    <!-- ===================================================================== -->
 
-</main>
+    <!-- ============ TAB: SIMULATOR ============ -->
+    <div data-tab-panel="sim" class="flex flex-1 h-full overflow-hidden">
+        <!-- Center Stage -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-surface">
+            <!-- Top Bar -->
+            <header class="flex justify-between items-center px-space-lg w-full h-12 bg-surface border-b border-zinc-800 shrink-0">
+                <div class="flex items-center gap-space-lg h-full">
+                    <div class="flex items-center gap-2 text-headline-sm font-headline-sm font-medium text-on-surface tracking-tight">
+                        <span>Simulator / Live View</span>
+                        <span class="px-1.5 py-0.5 rounded-DEFAULT bg-surface-container-highest border border-outline-variant text-label-sm font-label-sm text-tertiary">ONLINE</span>
+                    </div>
+                    <nav aria-label="Viewport Modes" class="hidden md:flex items-center gap-space-md h-full text-label-md font-label-md">
+                        <button class="text-primary border-b-2 border-primary pb-2 font-medium flex items-center gap-1.5 self-end transition-colors"><span>Live Canvas</span></button>
+                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Waveforms</span></button>
+                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Telemetry Logs</span></button>
+                    </nav>
+                </div>
+                <div class="flex items-center gap-space-sm">
+                    <button class="px-2.5 py-1 text-label-sm font-label-md bg-surface-container-high text-on-surface border border-outline-variant rounded-DEFAULT hover:bg-surface-container-highest active:scale-[0.98] transition-transform">Reset State</button>
+                    <button class="px-3 py-1 text-label-sm font-label-md bg-primary-container text-on-primary-container font-medium rounded-DEFAULT hover:opacity-95 active:scale-[0.98] transition-transform">Deploy Run</button>
+                    <div class="ml-2 w-7 h-7 rounded-DEFAULT bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary text-label-sm font-label-md font-semibold" title="Operator Profile">OP</div>
+                </div>
+            </header>
+            <!-- Error banner -->
+            <div id="errbar" class="hidden bg-red-900/80 text-red-200 px-4 py-2 text-xs font-mono border-b border-red-700 shrink-0"></div>
+            <!-- Canvas Viewport -->
+            <div class="flex-1 flex flex-col items-center justify-center p-6 bg-surface-container-lowest relative overflow-hidden">
+                <div class="max-w-[800px] w-full aspect-square bg-black rounded-xl border border-zinc-700 relative overflow-hidden shadow-2xl select-none">
+                    <div class="absolute inset-0 grid-pattern opacity-60 pointer-events-none"></div>
+                    <div class="absolute inset-0 radial-glow pointer-events-none"></div>
+                    <!-- HUD live readout -->
+                    <div class="absolute top-4 left-4 flex items-center gap-2 pointer-events-none text-label-sm font-label-sm z-10">
+                        <span id="live" class="px-2 py-0.5 rounded bg-zinc-900/90 border border-zinc-700 text-zinc-400 font-mono text-xs"></span>
+                    </div>
+                    <!-- The actual physics canvas — native 800×800, scales via CSS -->
+                    <canvas id="sim" width="800" height="800" class="physics-canvas absolute inset-0"></canvas>
+                </div>
+                <p class="text-sm text-zinc-500 text-center mt-3">Drag the bob anywhere, release to drop.</p>
+                <p id="simStatus" class="text-xs text-zinc-500 text-center mt-1 font-mono"></p>
+            </div>
+        </main>
 
-<script>
-"use strict";
-// ---------- error banner ----------
-window.onerror = (msg, src, line) => {
-  const b = document.getElementById("errbar");
-  b.style.display = "block";
-  b.textContent = "JS error: " + msg + " (line " + line + ")";
-};
-window.onunhandledrejection = e => {
-  const b = document.getElementById("errbar");
-  b.style.display = "block";
-  b.textContent = "async error: " + e.reason;
-};
+        <!-- Right Control Panel -->
+        <aside class="w-80 shrink-0 bg-surface-container-low border-l border-outline-variant p-6 overflow-y-auto h-full flex flex-col">
+            <div class="pb-3 border-b border-zinc-800 mb-5">
+                <h2 class="text-white font-semibold text-base tracking-tight">Physics Parameters</h2>
+                <p class="text-xs text-zinc-400 mt-1">Drag the bob and release to drop it.</p>
+            </div>
 
-// ---------- API helper (cache-busted) ----------
-async function api(path, opts = {}) {
-  const sep = path.includes("?") ? "&" : "?";
-  const res = await fetch(path + sep + "_t=" + Date.now(), opts);
-  if (!res.ok) throw new Error("HTTP " + res.status + " for " + path);
-  return res.json();
-}
+            <div class="flex flex-col gap-5 flex-1">
+                <!-- Attraction strength -->
+                <div class="flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                        <label for="force" class="text-zinc-300 font-medium">Attraction strength</label>
+                        <span id="forceVal" class="font-mono text-cyan-400 font-semibold">12</span>
+                    </div>
+                    <input id="force" type="range" min="2" max="25" step="0.5" value="12"
+                        class="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+                </div>
 
-// ---------- shared geometry: the REAL board, loaded from config ------------
-let CFG_MAG = [[77,433],[439,281],[413,688]];  // canonical (results.csv space)
-const HUB = [400,450];                          // canonical hub
-const MAG_COLORS = ["#ff5555","#50fa7b","#bd93f9"];
-let MAG = CFG_MAG.slice();                      // sim-space magnets (transformed)
-let SIM_HUB = HUB.slice();                      // sim-space hub
-let BOARD = [], WALLS = [];
-let CANON_WALLS = [];                           // walls in canonical coords
+                <!-- Damping -->
+                <div class="flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                        <label for="damp" class="text-zinc-300 font-medium">Damping</label>
+                        <span id="dampVal" class="font-mono text-cyan-400 font-semibold">0.25</span>
+                    </div>
+                    <input id="damp" type="range" min="0" max="2" step="0.05" value="0.25"
+                        class="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+                </div>
 
-// wooden triangle from the magnets: vertex i = m_j + m_k - m_i
-function wallsFrom(boardVerts, hub) {
-  return boardVerts.map((a, i) => {
-    const b = boardVerts[(i + 1) % 3];
-    const ex = b[0] - a[0], ey = b[1] - a[1];
-    let nx = ey, ny = -ex;
-    const nl = Math.hypot(nx, ny); nx /= nl; ny /= nl;
-    // outward normal: the hub must be on the NEGATIVE side of every wall
-    if ((hub[0] - a[0]) * nx + (hub[1] - a[1]) * ny > 0) { nx = -nx; ny = -ny; }
-    return { nx, ny, off: nx * a[0] + ny * a[1] };   // inside: dot(p,n) <= off
-  });
-}
+                <!-- String length -->
+                <div class="flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                        <label for="len" class="text-zinc-300 font-medium">String length</label>
+                        <span id="lenVal" class="font-mono text-cyan-400 font-semibold">380</span>
+                    </div>
+                    <input id="len" type="range" min="150" max="600" step="5" value="380"
+                        class="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+                </div>
 
-// canonical-space walls (no fit transform) — used by the predictor
-function rebuildCanonWalls() {
-  let verts = CFG_MAG.map((m, i) => {
-    const a = CFG_MAG[(i + 1) % 3], b = CFG_MAG[(i + 2) % 3];
-    return [a[0] + b[0] - m[0], a[1] + b[1] - m[1]];
-  });
-  CANON_WALLS = wallsFrom(verts, HUB);
-}
-rebuildCanonWalls();
+                <!-- Buttons -->
+                <div class="flex flex-col gap-2 pt-2">
+                    <button id="basinBtn"
+                        class="bg-amber-400 hover:bg-amber-300 text-zinc-950 font-medium px-4 py-2.5 rounded-lg shadow-sm transition-colors w-full text-center text-sm">
+                        Compute basin map
+                    </button>
+                    <button id="clearBtn"
+                        class="border border-zinc-700 hover:bg-zinc-800 text-zinc-300 px-4 py-2 rounded-lg transition-colors w-full text-center text-sm font-medium">
+                        Clear map
+                    </button>
+                </div>
 
-// sim-space: same triangle, scaled to fit the canvas
-function rebuildGeometry() {
-  let verts = CFG_MAG.map((m, i) => {
-    const a = CFG_MAG[(i + 1) % 3], b = CFG_MAG[(i + 2) % 3];
-    return [a[0] + b[0] - m[0], a[1] + b[1] - m[1]];
-  });
-  const xs = verts.map(v => v[0]), ys = verts.map(v => v[1]);
-  const bcx = (Math.min(...xs) + Math.max(...xs)) / 2;
-  const bcy = (Math.min(...ys) + Math.max(...ys)) / 2;
-  const k = Math.min(760 / (Math.max(...xs) - Math.min(...xs)),
-                     760 / (Math.max(...ys) - Math.min(...ys)), 1.6);
-  const T = ([x, y]) => [(x - bcx) * k + 400, (y - bcy) * k + 400];
-  BOARD = verts.map(T);
-  MAG = CFG_MAG.map(T);
-  SIM_HUB = T([HUB[0], HUB[1]]);
-  WALLS = wallsFrom(BOARD, SIM_HUB);
-}
-rebuildGeometry();
+                <div class="h-px bg-zinc-800"></div>
 
-function insideBoard(x, y, margin = 0) {
-  return WALLS.every(w => x * w.nx + y * w.ny <= w.off - margin);
-}
+                <!-- Basin Legend -->
+                <div class="flex flex-col gap-2 bg-zinc-900/50 border border-zinc-800/80 rounded-lg p-3">
+                    <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Basin Legend</span>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-zinc-300 font-mono">
+                        <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span><span>M0</span></div>
+                        <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span><span>M1</span></div>
+                        <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></span><span>M2</span></div>
+                        <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-zinc-500 shrink-0"></span><span class="text-[11px] text-zinc-400">no capture</span></div>
+                    </div>
+                </div>
 
-async function loadConfig() {
-  try {
-    const cfg = await api("/api/config");
-    if (Array.isArray(cfg.canonical_magnets) && cfg.canonical_magnets.length === 3)
-      CFG_MAG = cfg.canonical_magnets.map(([x, y]) => [+x, +y]);
+                <!-- Theory -->
+                <div class="mt-auto pt-3 border-t border-zinc-800">
+                    <p class="text-sm text-zinc-500 leading-relaxed">
+                        A magnetic pendulum oscillating above multiple magnetic attractors demonstrates deterministic chaos.
+                        Tiny variations in starting position resolve into complex fractal boundaries across basins of attraction.
+                    </p>
+                </div>
+            </div>
+        </aside>
+    </div><!-- /tab-sim -->
+
+
+    <!-- ============ TAB: REAL RUNS & BASIN MAP ============ -->
+    <div data-tab-panel="runs" class="hidden flex flex-1 h-full overflow-hidden">
+        <!-- Center Stage -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-surface">
+            <header class="flex justify-between items-center px-space-lg w-full h-12 bg-surface border-b border-zinc-800 shrink-0">
+                <div class="flex items-center gap-space-lg h-full">
+                    <div class="flex items-center gap-2 text-headline-sm font-headline-sm font-medium text-on-surface tracking-tight">
+                        <span>Real runs &amp; map / Basin Analysis</span>
+                        <span class="px-1.5 py-0.5 rounded-DEFAULT bg-surface-container-highest border border-outline-variant text-label-sm font-label-sm text-tertiary">CALIBRATED</span>
+                    </div>
+                    <nav aria-label="Viewport Modes" class="hidden md:flex items-center gap-space-md h-full text-label-md font-label-md">
+                        <button class="text-primary border-b-2 border-primary pb-2 font-medium flex items-center gap-1.5 self-end transition-colors"><span>Basin Map</span></button>
+                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Trajectory Scatter</span></button>
+                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Sensor Telemetry</span></button>
+                    </nav>
+                </div>
+                <div class="flex items-center gap-space-sm">
+                    <button id="refreshRuns" class="px-2.5 py-1 text-label-sm font-label-md bg-surface-container-high text-on-surface border border-outline-variant rounded-DEFAULT hover:bg-surface-container-highest active:scale-[0.98] transition-transform">Sync Dataset</button>
+                    <button class="px-3 py-1 text-label-sm font-label-md bg-primary-container text-on-primary-container font-medium rounded-DEFAULT hover:opacity-95 active:scale-[0.98] transition-transform">New Run Batch</button>
+                    <div class="ml-2 w-7 h-7 rounded-DEFAULT bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary text-label-sm font-label-md font-semibold" title="Operator Profile">OP</div>
+                </div>
+            </header>
+            <!-- Canvas Viewport -->
+            <div class="flex-1 flex flex-col items-center justify-center p-6 bg-surface-container-lowest relative overflow-hidden">
+                <!-- Sub-bar with checkboxes -->
+                <div class="w-full max-w-[750px] mb-4 flex flex-wrap items-center justify-between gap-4 px-2 select-none">
+                    <div class="flex items-center gap-5">
+                        <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-zinc-300 hover:text-white transition-colors">
+                            <input id="zoneToggle" checked type="checkbox"
+                                class="w-4 h-4 rounded bg-zinc-900 border-zinc-700 text-cyan-400 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-cyan-400">
+                            <span>Show predicted zones</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-zinc-300 hover:text-white transition-colors">
+                            <input id="hideInvalid" type="checkbox"
+                                class="w-4 h-4 rounded bg-zinc-900 border-zinc-700 text-cyan-400 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-cyan-400">
+                            <span>Successful drops only</span>
+                        </label>
+                    </div>
+                    <div class="text-xs text-zinc-500 font-mono flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="runsInfo"></span>
+                    </div>
+                </div>
+                <!-- Basin canvas container -->
+                <div class="max-w-[750px] w-full aspect-square bg-black rounded-xl border border-zinc-800 relative overflow-hidden shadow-2xl select-none">
+                    <div class="absolute inset-0 grid-pattern opacity-40 pointer-events-none"></div>
+                    <div class="absolute inset-0 radial-glow pointer-events-none"></div>
+                    <canvas id="basin" width="800" height="800" class="physics-canvas absolute inset-0"></canvas>
+                </div>
+                <p class="text-xs text-zinc-500 text-center mt-3 font-mono">Overlaying empirical drop origins with numerical basins of attraction.</p>
+            </div>
+        </main>
+
+        <!-- Right Control Panel -->
+        <aside class="w-80 shrink-0 bg-surface-container-low border-l border-outline-variant p-6 overflow-y-auto h-full flex flex-col">
+            <div class="pb-3 border-b border-zinc-800 mb-4">
+                <h2 class="text-white font-semibold text-base tracking-tight">Real drops on our magnetic board</h2>
+                <p class="text-xs text-zinc-400 mt-1 leading-relaxed">
+                    We release the pendulum bob from different spots on the triangular board. Every dot on the map is one real drop.
+                </p>
+            </div>
+            <div class="flex flex-col gap-4 flex-1">
+                <!-- Legend -->
+                <div class="flex flex-wrap gap-3 text-xs text-zinc-300 font-mono">
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span><span>caught by M0 (left)</span></div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span><span>caught by M1 (top)</span></div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></span><span>caught by M2 (bottom)</span></div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-zinc-600 shrink-0"></span><span>recording failed</span></div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div id="statCards" class="grid grid-cols-2 gap-2"></div>
+
+                <!-- Drop Caption -->
+                <div id="dropCaption" class="caption">Click any dot (or a row below) to see the path the bob took for that drop.</div>
+
+                <!-- How it works -->
+                <div class="flex flex-col gap-2 pt-1 border-t border-zinc-800">
+                    <span class="text-xs font-semibold text-zinc-300 uppercase tracking-wider">How it works</span>
+                    <div class="step"><div class="stepnum">1</div><div class="text-xs text-zinc-300">A phone camera films the board from above while we release the bob.</div></div>
+                    <div class="step"><div class="stepnum">2</div><div class="text-xs text-zinc-300">The software finds the three magnets and the center hub in the video automatically.</div></div>
+                    <div class="step"><div class="stepnum">3</div><div class="text-xs text-zinc-300">It follows the white bob in every frame and measures where it stops.</div></div>
+                    <div class="step"><div class="stepnum">4</div><div class="text-xs text-zinc-300">The nearest magnet to the stopping point wins, and the drop is added to the map.</div></div>
+                </div>
+
+                <!-- Action Row -->
+                <div class="flex items-center gap-2 pt-1">
+                    <button id="predictBtn" class="bg-primary-container hover:opacity-90 text-on-primary-container font-medium px-3 py-1.5 rounded-lg text-xs transition-opacity flex-1 text-center">Fill failed drops</button>
+                    <button id="appendBtn" class="border border-zinc-700 hover:bg-zinc-800 text-zinc-300 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex-1 text-center">Save results</button>
+                </div>
+
+                <!-- Runs Table -->
+                <div class="flex flex-col gap-1 pt-1">
+                    <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Recent Drop Log</span>
+                    <div id="runsTable" class="overflow-y-auto max-h-56 border border-zinc-800 rounded-lg bg-zinc-950/60 text-xs font-mono"></div>
+                </div>
+
+                <!-- Technical Details -->
+                <details class="text-xs">
+                    <summary class="cursor-pointer text-zinc-500 text-xs my-1">Technical details &amp; calibration images</summary>
+                    <div id="techTable" class="mt-2"></div>
+                    <div class="text-xs text-zinc-400 mt-2 mb-1"><b>Calibration previews</b> — the software's guess of the magnet positions (red circles)</div>
+                    <div id="gallery"></div>
+                </details>
+            </div>
+        </aside>
+    </div><!-- /tab-runs -->
+
+
+    <!-- ============ TAB: VIDEOS ============ -->
+    <div data-tab-panel="videos" class="hidden flex flex-1 h-full overflow-hidden">
+        <!-- Center Stage -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-surface">
+            <header class="flex justify-between items-center px-space-lg w-full h-12 bg-surface border-b border-zinc-800 shrink-0">
+                <div class="flex items-center gap-space-lg h-full">
+                    <div class="flex items-center gap-2 text-headline-sm font-headline-sm font-medium text-on-surface tracking-tight">
+                        <span>Videos / Trajectory Extraction</span>
+                        <span class="px-1.5 py-0.5 rounded-DEFAULT bg-surface-container-highest border border-outline-variant text-label-sm font-label-sm text-tertiary">240 FPS READY</span>
+                    </div>
+                    <nav aria-label="Viewport Modes" class="hidden md:flex items-center gap-space-md h-full text-label-md font-label-md">
+                        <button class="text-primary border-b-2 border-primary pb-2 font-medium flex items-center gap-1.5 self-end transition-colors"><span>Result Cards</span></button>
+                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Batch Queue</span></button>
+                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Optical Calibration</span></button>
+                    </nav>
+                </div>
+                <div class="flex items-center gap-space-sm">
+                    <button class="px-2.5 py-1 text-label-sm font-label-md bg-surface-container-high text-on-surface border border-outline-variant rounded-DEFAULT hover:bg-surface-container-highest active:scale-[0.98] transition-transform">Sync Cloud</button>
+                    <div class="ml-2 w-7 h-7 rounded-DEFAULT bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary text-label-sm font-label-md font-semibold" title="Operator Profile">OP</div>
+                </div>
+            </header>
+            <!-- Content: result cards -->
+            <div class="flex-1 overflow-y-auto p-6 bg-surface-container-lowest">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-white">Processed Trajectory Extractions</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-zinc-400 font-mono">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>Optical Tracker Active</span>
+                        </div>
+                    </div>
+                    <!-- Result cards injected by JS into #cards -->
+                    <div id="cards" class="grid grid-cols-2 gap-6">
+                        <span class="text-zinc-500 text-sm col-span-2">Analyze a video to see its result here.</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Control Panel -->
+        <aside class="w-80 shrink-0 bg-surface-container-low border-l border-outline-variant p-6 overflow-y-auto h-full flex flex-col">
+            <div class="flex flex-col h-full justify-between gap-4">
+                <div>
+                    <div class="pb-3 border-b border-zinc-800 mb-4">
+                        <h2 class="text-white font-semibold text-base tracking-tight">Video Processing</h2>
+                        <p class="text-xs text-zinc-400 mt-1 leading-relaxed">Automated optical tracking &amp; capture classification from high-speed camera recordings.</p>
+                    </div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <button id="analyzeAll" class="bg-primary-container text-on-primary-container font-medium px-4 py-2 rounded-lg text-xs hover:opacity-90 transition-opacity flex-1 text-center font-headline-sm">Analyze All</button>
+                        <button id="refreshVideos" class="border border-zinc-800 hover:bg-zinc-900 text-zinc-300 px-4 py-2 rounded-lg text-xs font-medium transition-colors flex-1 text-center">Reload list</button>
+                    </div>
+                    <!-- Video list -->
+                    <div class="flex flex-col">
+                        <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">Input Recordings</div>
+                        <div id="videoList" class="flex flex-col">
+                            <span class="text-zinc-500 text-xs">loading…</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Raw analysis log -->
+                <div>
+                    <div class="bg-black font-mono text-xs text-zinc-400 border border-zinc-800 rounded-lg p-3 h-44 overflow-y-auto flex flex-col justify-between shadow-inner">
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between pb-1 mb-1 border-b border-zinc-900 text-[10px] text-zinc-500 uppercase tracking-wider">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-rose-500/80"></span>
+                                    <span class="w-2 h-2 rounded-full bg-amber-500/80"></span>
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500/80"></span>
+                                </div>
+                                <span>TELEMETRY &amp; INFERENCE LOG</span>
+                            </div>
+                            <pre id="log" class="text-[11px] leading-relaxed text-zinc-400 whitespace-pre-wrap bg-transparent border-0 p-0 max-h-none">Analysis log will appear here.</pre>
+                        </div>
+                        <div class="flex items-center gap-1 text-[11px] text-cyan-400 pt-1">
+                            <span class="text-zinc-600">&gt;</span>
+                            <span>tracking_daemon:</span>
+                            <span class="w-2 h-3.5 bg-cyan-400 inline-block animate-pulse"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div><!-- /tab-videos -->
+
+
+    <!-- ============ TAB: PHOTO ============ -->
+    <div data-tab-panel="photo" class="hidden flex flex-1 h-full overflow-hidden">
+        <!-- Center Stage -->
+        <main class="flex-1 flex flex-col bg-surface overflow-hidden relative">
+            <!-- Top Sub-Header Bar -->
+            <header class="h-12 w-full border-b border-outline-variant px-space-lg flex items-center justify-between bg-surface-container-low shrink-0 z-20">
+                <div class="flex items-center gap-space-md">
+                    <div class="flex items-center gap-2">
+                        <span class="text-label-md font-label-md text-outline">Telemetry</span>
+                        <span class="text-outline text-xs">/</span>
+                        <span class="text-headline-sm font-headline-sm font-medium text-on-surface tracking-tight">Photo / Board Optical Alignment</span>
+                    </div>
+                    <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-DEFAULT bg-surface-container border border-outline-variant text-label-sm font-label-sm text-tertiary">
+                        <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-ping"></span>
+                        <span>READY FOR CALIBRATION</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-space-lg">
+                    <nav class="flex items-center gap-4 text-label-md font-label-md">
+                        <button class="text-primary border-b-2 border-primary pb-3.5 pt-3.5 font-medium flex items-center gap-1.5 text-xs">
+                            <span class="material-symbols-outlined text-sm" data-icon="center_focus_strong">center_focus_strong</span>
+                            <span>Optical Canvas</span>
+                        </button>
+                        <button class="text-on-surface-variant hover:text-on-surface pb-3.5 pt-3.5 font-normal flex items-center gap-1.5 text-xs transition-colors">
+                            <span class="material-symbols-outlined text-sm" data-icon="grid_4x4">grid_4x4</span>
+                            <span>Alignment Matrix</span>
+                        </button>
+                    </nav>
+                </div>
+            </header>
+
+            <!-- Canvas Interactive Viewport -->
+            <div class="flex-1 overflow-auto flex flex-col items-center justify-center p-space-lg relative bg-surface-container-lowest">
+                <div class="relative flex flex-col items-center">
+                    <!-- Top Ruler -->
+                    <div class="w-[640px] h-4 mb-1 flex justify-between items-end text-[9px] font-label-sm text-outline/60 px-1 border-b border-outline-variant/40">
+                        <span>0 px</span><span>160</span><span>320 (X-CTR)</span><span>480</span><span>640 px</span>
+                    </div>
+                    <!-- Photo canvas container — fixed 640×480 visible size, actual size set dynamically by JS -->
+                    <div class="w-[640px] h-[480px] bg-black rounded-xl border border-outline-variant/80 relative overflow-hidden shadow-2xl flex items-center justify-center group cursor-crosshair select-none"
+                        id="optical-stage">
+                        <div class="absolute inset-0 optical-grid opacity-30 pointer-events-none"></div>
+                        <div class="absolute inset-0 optical-fine-grid opacity-20 pointer-events-none"></div>
+                        <!-- Center crosshair -->
+                        <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                            <div class="w-full h-px bg-primary/20"></div>
+                            <div class="h-full w-px bg-primary/20 absolute"></div>
+                            <div class="w-16 h-16 rounded-full border border-primary/25 border-dashed absolute"></div>
+                            <div class="w-2 h-2 rounded-full border border-primary/60 absolute"></div>
+                        </div>
+                        <!-- The photo canvas -->
+                        <canvas id="photo" width="640" height="480" class="physics-canvas absolute inset-0"></canvas>
+                        <!-- Instruction badge -->
+                        <div class="absolute bottom-4 inset-x-8 flex items-center justify-between pointer-events-none">
+                            <div class="bg-surface-container-highest/85 backdrop-blur-md border border-outline-variant/80 px-3 py-1.5 rounded-DEFAULT flex items-center gap-2 text-on-surface shadow-lg">
+                                <span class="material-symbols-outlined text-primary text-sm" data-icon="ads_click">ads_click</span>
+                                <span class="text-body-sm font-body-sm font-medium tracking-wide">Click anywhere on the photo to drop the pendulum there</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Left ruler -->
+                    <div class="absolute -left-9 top-5 h-[480px] flex flex-col justify-between text-[9px] font-label-sm text-outline/60 text-right pr-2">
+                        <span>0 px</span><span>120</span><span>240</span><span>360</span><span>480 px</span>
+                    </div>
+                    <!-- Metric row -->
+                    <div class="mt-3 flex items-center justify-center gap-3 text-label-sm font-label-sm text-outline">
+                        <span class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs text-primary" data-icon="aspect_ratio">aspect_ratio</span>
+                            Optical Field: 640×480 px
+                        </span>
+                        <span class="text-outline-variant">•</span>
+                        <span class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs text-tertiary" data-icon="straighten">straighten</span>
+                            1px ≈ 0.42mm calibrated area
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom telemetry strip -->
+            <div class="h-8 w-full bg-surface-container-lowest border-t border-outline-variant px-space-lg flex items-center justify-between text-label-sm font-label-sm text-outline shrink-0">
+                <div class="flex items-center gap-4">
+                    <span class="flex items-center gap-1 text-primary">
+                        <span class="material-symbols-outlined text-xs" data-icon="photo_camera">photo_camera</span>
+                        <span>CAPTURE DEVICE: OVERHEAD CAM</span>
+                    </span>
+                    <span class="text-outline-variant">|</span>
+                    <span id="photoLive" class="font-mono text-xs"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-tertiary font-code-inline">HOMOGRAPHY MATRIX: COMPLIANT</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Control Panel -->
+        <aside class="w-80 bg-surface-container-low border-l border-outline-variant p-6 flex flex-col justify-between shrink-0 overflow-y-auto z-20">
+            <div class="flex flex-col gap-space-lg">
+                <div class="border-b border-outline-variant pb-3">
+                    <h2 class="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight">Photo Analysis</h2>
+                    <p class="text-body-sm font-body-sm text-outline mt-0.5">High-precision optical feature detection &amp; attractor seeding.</p>
+                </div>
+
+                <!-- File Upload -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-[10px] font-label-sm uppercase tracking-wider text-outline">Optical Capture Input</label>
+                    <div class="border-2 border-dashed border-outline-variant hover:border-primary hover:bg-surface-container/60 transition-all rounded-xl p-5 text-center cursor-pointer group flex flex-col items-center justify-center gap-2 bg-surface-container-lowest/50">
+                        <div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-outline group-hover:text-primary group-hover:scale-105 transition-all">
+                            <span class="material-symbols-outlined text-xl" data-icon="cloud_upload">cloud_upload</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-label-md font-label-md font-medium text-on-surface group-hover:text-primary transition-colors">Upload a top-down photo (JPEG/PNG)</span>
+                            <span class="text-label-sm font-label-sm text-outline mt-0.5">Drag &amp; drop or browse files</span>
+                        </div>
+                        <input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" class="absolute opacity-0 w-full h-full cursor-pointer inset-0">
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="flex items-center justify-between px-3 py-2 bg-surface-container border border-outline-variant rounded-DEFAULT">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                        <span id="photoStatus" class="text-label-sm font-label-sm text-on-surface">Status: <span class="text-amber-300">No photo uploaded yet.</span></span>
+                    </div>
+                    <span class="text-[10px] font-label-sm text-outline">AUTO-POLL</span>
+                </div>
+
+                <!-- Instruction callout -->
+                <div class="bg-surface-container-high/60 border border-outline-variant rounded-DEFAULT p-3 flex flex-col gap-2">
+                    <div class="flex items-start gap-2">
+                        <span class="material-symbols-outlined text-primary text-base shrink-0 mt-0.5" data-icon="info">info</span>
+                        <p class="text-body-sm font-body-sm text-on-surface leading-snug">
+                            Upload a top-down photo of the board (hub tape + 3 magnets visible). Detected magnets are drawn on it; then <b>click anywhere on the photo</b> to drop the pendulum there.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Detection Vectors -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-label-sm uppercase tracking-wider text-outline">Detection Vectors</span>
+                        <span class="text-[10px] font-label-sm text-primary">3-BODY ARRAY</span>
+                    </div>
+                    <div class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT divide-y divide-outline-variant/50 font-label-sm text-xs">
+                        <div class="p-2 flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span><span class="text-on-surface">Magnet M0 (North)</span></div><span class="text-outline font-code-inline text-[11px]">Pending detection</span></div>
+                        <div class="p-2 flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span><span class="text-on-surface">Magnet M1 (South-West)</span></div><span class="text-outline font-code-inline text-[11px]">Pending detection</span></div>
+                        <div class="p-2 flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span><span class="text-on-surface">Magnet M2 (South-East)</span></div><span class="text-outline font-code-inline text-[11px]">Pending detection</span></div>
+                        <div class="p-2 flex items-center justify-between bg-surface-container/30">
+                            <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-xs text-tertiary" data-icon="my_location">my_location</span><span class="text-on-surface font-medium">Predicted Basin Attractor</span></div>
+                            <span id="photoLive2" class="text-outline font-code-inline text-[11px]">Awaiting drop point</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="pt-4 border-t border-outline-variant flex flex-col gap-2 mt-4">
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="py-2 px-3 bg-surface-container-high hover:bg-surface-variant text-on-surface border border-outline-variant font-label-md text-label-md rounded-DEFAULT flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]">
+                        <span class="material-symbols-outlined text-sm text-outline" data-icon="tune">tune</span>
+                        <span>Calibrate Lens</span>
+                    </button>
+                    <button class="py-2 px-3 bg-primary-container text-on-primary-container hover:bg-primary font-label-md text-label-md rounded-DEFAULT font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm active:scale-[0.98]">
+                        <span class="material-symbols-outlined text-sm" data-icon="play_arrow">play_arrow</span>
+                        <span>Simulate Drop</span>
+                    </button>
+                </div>
+                <button class="w-full py-1.5 text-center text-label-sm font-label-sm text-outline hover:text-on-surface transition-colors flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-xs" data-icon="download">download</span>
+                    <span>Export Optical Calibrations (JSON)</span>
+                </button>
+            </div>
+        </aside>
+    </div><!-- /tab-photo -->
+
+
+    <!-- ===================================================================== -->
+    <!-- ALL JAVASCRIPT (physics engine + API + UI wiring)                     -->
+    <!-- ===================================================================== -->
+    <script>
+    "use strict";
+
+    // ---------- error banner ----------
+    window.onerror = (msg, src, line) => {
+      const b = document.getElementById("errbar");
+      b.classList.remove("hidden");
+      b.textContent = "JS error: " + msg + " (line " + line + ")";
+    };
+    window.onunhandledrejection = e => {
+      const b = document.getElementById("errbar");
+      b.classList.remove("hidden");
+      b.textContent = "async error: " + e.reason;
+    };
+
+    // ---------- API helper (cache-busted) ----------
+    async function api(path, opts = {}) {
+      const sep = path.includes("?") ? "&" : "?";
+      const res = await fetch(path + sep + "_t=" + Date.now(), opts);
+      if (!res.ok) throw new Error("HTTP " + res.status + " for " + path);
+      return res.json();
+    }
+
+    // ---------- shared geometry: the REAL board, loaded from config ------------
+    let CFG_MAG = [[77,433],[439,281],[413,688]];  // canonical (results.csv space)
+    const HUB = [400,450];                          // canonical hub
+    const MAG_COLORS = ["#ff5555","#50fa7b","#bd93f9"];
+    let MAG = CFG_MAG.slice();                      // sim-space magnets (transformed)
+    let SIM_HUB = HUB.slice();                      // sim-space hub
+    let BOARD = [], WALLS = [];
+    let CANON_WALLS = [];                           // walls in canonical coords
+
+    // wooden triangle from the magnets: vertex i = m_j + m_k - m_i
+    function wallsFrom(boardVerts, hub) {
+      return boardVerts.map((a, i) => {
+        const b = boardVerts[(i + 1) % 3];
+        const ex = b[0] - a[0], ey = b[1] - a[1];
+        let nx = ey, ny = -ex;
+        const nl = Math.hypot(nx, ny); nx /= nl; ny /= nl;
+        // outward normal: the hub must be on the NEGATIVE side of every wall
+        if ((hub[0] - a[0]) * nx + (hub[1] - a[1]) * ny > 0) { nx = -nx; ny = -ny; }
+        return { nx, ny, off: nx * a[0] + ny * a[1] };   // inside: dot(p,n) <= off
+      });
+    }
+
+    // canonical-space walls (no fit transform) — used by the predictor
+    function rebuildCanonWalls() {
+      let verts = CFG_MAG.map((m, i) => {
+        const a = CFG_MAG[(i + 1) % 3], b = CFG_MAG[(i + 2) % 3];
+        return [a[0] + b[0] - m[0], a[1] + b[1] - m[1]];
+      });
+      CANON_WALLS = wallsFrom(verts, HUB);
+    }
     rebuildCanonWalls();
+
+    // sim-space: same triangle, scaled to fit the canvas
+    function rebuildGeometry() {
+      let verts = CFG_MAG.map((m, i) => {
+        const a = CFG_MAG[(i + 1) % 3], b = CFG_MAG[(i + 2) % 3];
+        return [a[0] + b[0] - m[0], a[1] + b[1] - m[1]];
+      });
+      const xs = verts.map(v => v[0]), ys = verts.map(v => v[1]);
+      const bcx = (Math.min(...xs) + Math.max(...xs)) / 2;
+      const bcy = (Math.min(...ys) + Math.max(...ys)) / 2;
+      const k = Math.min(760 / (Math.max(...xs) - Math.min(...xs)),
+                         760 / (Math.max(...ys) - Math.min(...ys)), 1.6);
+      const T = ([x, y]) => [(x - bcx) * k + 400, (y - bcy) * k + 400];
+      BOARD = verts.map(T);
+      MAG = CFG_MAG.map(T);
+      SIM_HUB = T([HUB[0], HUB[1]]);
+      WALLS = wallsFrom(BOARD, SIM_HUB);
+    }
     rebuildGeometry();
-    bob = { x: SIM_HUB[0], y: SIM_HUB[1] - 120, vx: 0, vy: 0 };
-  } catch (e) { console.warn("config load failed, using reference layout", e); }
-}
 
-// ---------- tabs ----------
-document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
-  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("active", x === b));
-  for (const id of ["sim","runs","videos","photo"])
-    document.getElementById("tab-" + id).hidden = (b.dataset.tab !== id);
-  if (b.dataset.tab === "runs") loadRuns();
-  if (b.dataset.tab === "videos") loadVideos();
-});
-
-// ================= SHARED PHYSICS =================
-// One step function used by the simulator, basin map, and predictor.
-function canonAccel(x, y, F, magnets) {      // softened 1/d^2 attraction
-  let ax = 0, ay = 0;
-  for (const [mx, my] of magnets) {
-    const dx = mx - x, dy = my - y;
-    const d2 = dx*dx + dy*dy;
-    const mag = F * 1e6 / (d2 + 4000);
-    const d = Math.sqrt(d2);
-    ax += mag * dx / d; ay += mag * dy / d;
-  }
-  return [ax, ay];
-}
-function physicsStep(st, F, c, L, magnets, walls, hub) {
-  const [ax, ay] = canonAccel(st.x, st.y, F, magnets);
-  st.vx = (st.vx + ax * (1/240)) * Math.exp(-c * (1/240));
-  st.vy = (st.vy + ay * (1/240)) * Math.exp(-c * (1/240));
-  st.x += st.vx * (1/240); st.y += st.vy * (1/240);
-  for (const w of walls) {                   // wooden walls: bounce, damped
-    const s = st.x * w.nx + st.y * w.ny - w.off;
-    if (s > 0) {
-      st.x -= w.nx * s; st.y -= w.ny * s;
-      const vn = st.vx * w.nx + st.vy * w.ny;
-      if (vn > 0) { st.vx -= 1.4 * vn * w.nx; st.vy -= 1.4 * vn * w.ny; }
+    function insideBoard(x, y, margin = 0) {
+      return WALLS.every(w => x * w.nx + y * w.ny <= w.off - margin);
     }
-  }
-  const dx = st.x - hub[0], dy = st.y - hub[1], r = Math.hypot(dx, dy);
-  if (r > L) {                               // string goes taut
-    st.x = hub[0] + dx * L / r; st.y = hub[1] + dy * L / r;
-    const nx = dx / r, ny = dy / r, vr = st.vx*nx + st.vy*ny;
-    if (vr > 0) { st.vx -= vr * nx; st.vy -= vr * ny; }
-  }
-}
-function nearestMagnet(x, y, magnets) {
-  let best = -1, bd = 1e9;
-  magnets.forEach(([mx, my], i) => {
-    const d = Math.hypot(x - mx, y - my);
-    if (d < bd) { bd = d; best = i; }
-  });
-  return { i: bd < 100 ? best : -1, d: bd };
-}
-// full drop simulation in canonical coordinates
-function simulatePath(start, F, c, L, maxSteps = 6000) {
-  const st = { x: start.x, y: start.y, vx: 0, vy: 0 };
-  const path = [[st.x, st.y]];
-  let steps = 0, capture = -1;
-  for (; steps < maxSteps; steps++) {
-    physicsStep(st, F, c, L, CFG_MAG, CANON_WALLS, HUB);
-    path.push([st.x, st.y]);
-    if (steps > 30 && Math.hypot(st.vx, st.vy) < 3) break;
-  }
-  const n = nearestMagnet(st.x, st.y, CFG_MAG);
-  capture = n.i;
-  return { path, capture, dist: n.d, end: { x: st.x, y: st.y }, steps };
-}
 
-// ================= SIMULATOR =================
-const sim = document.getElementById("sim"), sctx = sim.getContext("2d");
-let basinLayer = null;
-let bob = { x: 400, y: 250, vx: 0, vy: 0 };
-let running = false, trail = [], quiet = 0, raf = null, simTime = 0;
-
-function clampToReach(p) {                   // board walls first, then string
-  for (const w of WALLS) {
-    const s = p.x * w.nx + p.y * w.ny - w.off;
-    if (s > 0) { p = { x: p.x - w.nx * s, y: p.y - w.ny * s }; }
-  }
-  const dx = p.x - SIM_HUB[0], dy = p.y - SIM_HUB[1], r = Math.hypot(dx, dy), L = +len.value;
-  if (r > L) return { x: SIM_HUB[0] + dx * L / r, y: SIM_HUB[1] + dy * L / r };
-  return p;
-}
-function simStep(dt) {                       // delegates to the shared physics
-  physicsStep(bob, +force.value, +damp.value, +len.value, MAG, WALLS, SIM_HUB);
-}
-function capturedBy() { return nearestMagnet(bob.x, bob.y, MAG).i; }
-
-function frame() {
-  if (running) {
-    for (let i = 0; i < 4; i++) physicsStep(bob, +force.value, +damp.value,
-                                            +len.value, MAG, WALLS, SIM_HUB);
-    simTime += 1/60;
-    trail.push([bob.x, bob.y]);
-    if (trail.length > 3000) trail.shift();
-    const speed = Math.hypot(bob.vx, bob.vy);
-    quiet = speed < 3 ? quiet + 1 : 0;
-    if (quiet > 120 || simTime > 90) {
-      running = false;
-      const n = nearestMagnet(bob.x, bob.y, MAG);
-      document.getElementById("simStatus").textContent =
-        (quiet > 120 ? "Settled — " : "Still moving after 90 s — ") +
-        (n.i >= 0 ? `last near magnet M${n.i} (${Math.round(n.d)} px away).`
-                  : "no capture — string too long or force too weak.");
+    async function loadConfig() {
+      try {
+        const cfg = await api("/api/config");
+        if (Array.isArray(cfg.canonical_magnets) && cfg.canonical_magnets.length === 3)
+          CFG_MAG = cfg.canonical_magnets.map(([x, y]) => [+x, +y]);
+        rebuildCanonWalls();
+        rebuildGeometry();
+        bob = { x: SIM_HUB[0], y: SIM_HUB[1] - 120, vx: 0, vy: 0 };
+      } catch (e) { console.warn("config load failed, using reference layout", e); }
     }
-  }
-  const n = nearestMagnet(bob.x, bob.y, MAG);
-  document.getElementById("live").textContent =
-    "speed " + Math.round(Math.hypot(bob.vx, bob.vy)) +
-    " px/s  ·  nearest magnet M" + n.i + " at " + Math.round(n.d) + " px";
-  drawSim();
-  raf = requestAnimationFrame(frame);
-}
 
-function drawSim() {
-  sctx.clearRect(0, 0, 800, 800);
-  if (basinLayer) sctx.drawImage(basinLayer, 0, 0);
-  sctx.strokeStyle = "#5a5f70"; sctx.lineWidth = 3;
-  sctx.beginPath(); sctx.moveTo(...BOARD[0]);
-  sctx.lineTo(...BOARD[1]); sctx.lineTo(...BOARD[2]); sctx.closePath();
-  sctx.stroke(); sctx.lineWidth = 1;
-  sctx.fillStyle = "#8a90a5"; sctx.fillRect(SIM_HUB[0]-5, SIM_HUB[1]-5, 10, 10);
-  MAG.forEach(([mx, my], i) => {
-    sctx.fillStyle = MAG_COLORS[i];
-    sctx.beginPath(); sctx.arc(mx, my, 11, 0, 7); sctx.fill();
-    sctx.fillStyle = "#e8eaf0"; sctx.font = "14px sans-serif";
-    sctx.fillText("M" + i, mx + 14, my - 10);
-  });
-  if (trail.length > 1) {
-    sctx.strokeStyle = "rgba(120,200,255,.75)"; sctx.lineWidth = 1.5;
-    sctx.beginPath(); sctx.moveTo(trail[0][0], trail[0][1]);
-    for (const [x, y] of trail) sctx.lineTo(x, y);
-    sctx.stroke(); sctx.lineWidth = 1;
-  }
-  sctx.strokeStyle = "rgba(200,200,210,.35)";
-  sctx.beginPath(); sctx.moveTo(SIM_HUB[0], SIM_HUB[1]); sctx.lineTo(bob.x, bob.y); sctx.stroke();
-  sctx.fillStyle = "#ffffff";
-  sctx.beginPath(); sctx.arc(bob.x, bob.y, 8, 0, 7); sctx.fill();
-}
+    // ---------- TAB SWITCHING ----------
+    const TAB_IDS = ["sim", "runs", "videos", "photo"];
+    const TAB_LABELS = { sim: "Simulator / Live View", runs: "Real runs & map / Basin Analysis", videos: "Videos / Trajectory Extraction", photo: "Photo / Board Optical Alignment" };
 
-function drop() {
-  trail = []; quiet = 0; simTime = 0; running = true;
-  document.getElementById("simStatus").textContent = "Swinging…";
-}
-let dragging = false;
-function canvasPos(e) {
-  const r = sim.getBoundingClientRect();
-  return clampToReach({ x: (e.clientX - r.left) * 800 / r.width,
-                        y: (e.clientY - r.top) * 800 / r.height });
-}
-sim.addEventListener("pointerdown", e => {
-  dragging = true; running = false; bob = { ...canvasPos(e), vx: 0, vy: 0 };
-  trail = []; sim.setPointerCapture(e.pointerId);
-});
-sim.addEventListener("pointermove", e => { if (dragging) bob = { ...canvasPos(e), vx: 0, vy: 0 }; });
-sim.addEventListener("pointerup", () => { if (dragging) { dragging = false; drop(); } });
-
-for (const id of ["force", "damp", "len"])
-  document.getElementById(id).oninput = e =>
-    document.getElementById(id + "Val").textContent =
-      (+e.target.value).toFixed(id === "damp" ? 2 : 0);
-
-// ---- theoretical basin map ----
-function computeBasin() {
-  const F = +force.value, c = +damp.value, L = +len.value;
-  basinLayer = document.createElement("canvas");
-  basinLayer.width = basinLayer.height = 800;
-  const bctx = basinLayer.getContext("2d");
-  const cell = 10;
-  document.getElementById("simStatus").textContent = "Computing basin map…";
-  requestAnimationFrame(() => {
-    for (let gy = 5; gy < 800; gy += cell) {
-      for (let gx = 5; gx < 800; gx += cell) {
-        if (!insideBoard(gx, gy, 8)) continue;
-        const res = simulatePath({ x: gx, y: gy }, F, c, L);
-        bctx.fillStyle = res.capture >= 0 ? MAG_COLORS[res.capture] + "99" : "#88888830";
-        bctx.fillRect(gx - cell/2, gy - cell/2, cell, cell);
-      }
+    function switchTab(tabId) {
+      // Update panels
+      TAB_IDS.forEach(id => {
+        const panel = document.querySelector(`[data-tab-panel="${id}"]`);
+        if (panel) panel.classList.toggle("hidden", id !== tabId);
+      });
+      // Update nav buttons
+      document.querySelectorAll("[data-nav-btn]").forEach(btn => {
+        const isActive = btn.dataset.tab === tabId;
+        btn.classList.toggle("nav-active", isActive);
+        // Show/hide dot indicator
+        const dot = btn.querySelector(".nav-dot");
+        if (dot) dot.style.display = isActive ? "" : "none";
+        // Icon color
+        const icon = btn.querySelector(".nav-icon");
+        if (icon) icon.style.color = isActive ? "#8aebff" : "";
+      });
+      // Trigger data loads
+      if (tabId === "runs") loadRuns();
+      if (tabId === "videos") loadVideos();
     }
-    document.getElementById("simStatus").textContent =
-      "Basin map ready — each colored pixel is a drop position, colored by " +
-      "the magnet that captures it. Change a slider and recompute: the " +
-      "boundary moves and splits (that splitting IS the chaos).";
-    drawSim();
-  });
-}
-document.getElementById("basinBtn").onclick = computeBasin;
-document.getElementById("clearBtn").onclick = () => { basinLayer = null; drawSim(); };
-loadConfig().then(() => drawSim());
-frame();
 
-// ================= REAL RUNS =================
-let RUNS = [], TRAJS = [], PRED = {}, selectedRun = null, TUNED = null;
-let zoneLayer = null, zonesReady = false;
-
-// plain-language version of the tracker's technical notes
-function plainNote(r) {
-  const n = (r.note || "").toLowerCase();
-  if (r.video && r.video.includes("[SIMULATED]")) return "simulated prediction";
-  if (n.includes("far from all magnets")) return "the bob was never caught — it stopped far from every magnet (string too long or no real drop)";
-  if (n.includes("unsettled")) return "the video ended before the bob stopped moving";
-  if (n.includes("near/on a magnet")) return "the bob stopped right on a magnet";
-  if (n.includes("never detected")) return "the bob was never found in the video";
-  return r.note || "";
-}
-
-function dropStats() {
-  // simulated rows are predictions, not measurements — keep them out of the
-  // "measured" numbers so the headline stats stay honest.
-  const real = RUNS.filter(r => !(r.video || "").includes("[SIMULATED]"));
-  const valid = real.filter(r => r.valid);
-  const wins = [0, 0, 0];
-  valid.forEach(r => { if (r.magnet_id >= 0 && r.magnet_id <= 2) wins[r.magnet_id]++; });
-  const simulated = RUNS.length - real.length;
-  return { total: real.length, valid: valid.length, wins, simulated };
-}
-
-function drawRunsCanvas() {
-  const bctx = document.getElementById("basin").getContext("2d");
-  bctx.clearRect(0, 0, 800, 800);
-  if (zoneToggle.checked && zoneLayer) bctx.drawImage(zoneLayer, 0, 0);
-  // board triangle
-  let verts = CFG_MAG.map((m, i) => {
-    const a = CFG_MAG[(i + 1) % 3], b = CFG_MAG[(i + 2) % 3];
-    return [a[0] + b[0] - m[0], a[1] + b[1] - m[1]];
-  });
-  bctx.strokeStyle = "#6a7085"; bctx.lineWidth = 3;
-  bctx.beginPath(); bctx.moveTo(...verts[0]);
-  bctx.lineTo(...verts[1]); bctx.lineTo(...verts[2]); bctx.closePath();
-  bctx.stroke(); bctx.lineWidth = 1;
-  bctx.fillStyle = "#8a90a5"; bctx.fillRect(HUB[0]-5, HUB[1]-5, 10, 10);
-  CFG_MAG.forEach(([mx, my], i) => {
-    bctx.fillStyle = MAG_COLORS[i];
-    bctx.beginPath(); bctx.arc(mx, my, 12, 0, 7); bctx.fill();
-    bctx.fillStyle = "#e8eaf0"; bctx.font = "bold 15px sans-serif";
-    bctx.fillText("M" + i, mx + 15, my - 11);
-  });
-  // simulated prediction paths (dashed golden)
-  for (const [id, p] of Object.entries(PRED)) {
-    if (p.path.length < 2) continue;
-    bctx.strokeStyle = "rgba(255,217,124,.85)"; bctx.setLineDash([7, 6]);
-    bctx.beginPath(); bctx.moveTo(p.path[0][0], p.path[0][1]);
-    for (const [x, y] of p.path) bctx.lineTo(x, y);
-    bctx.stroke(); bctx.setLineDash([]);
-  }
-  // selected run's real trajectory
-  if (selectedRun != null && window.__trajPts && window.__trajPts.length > 1) {
-    const pts = window.__trajPts;
-    for (let i = 1; i < pts.length; i++) {
-      const a = i / pts.length;
-      bctx.strokeStyle = `rgba(${Math.round(80 + 175 * a)},${Math.round(200 - 80 * a)},255,${0.25 + 0.6 * a})`;
-      bctx.beginPath(); bctx.moveTo(pts[i-1][1], pts[i-1][2]);
-      bctx.lineTo(pts[i][1], pts[i][2]); bctx.stroke();
-    }
-    bctx.fillStyle = "#fff";
-    bctx.beginPath(); bctx.arc(pts[0][1], pts[0][2], 5, 0, 7); bctx.fill();
-  }
-  // drop dots
-  const showInvalid = !document.getElementById("hideInvalid").checked;
-  for (const r of RUNS) {
-    if (!showInvalid && !r.valid) continue;
-    bctx.fillStyle = r.valid ? MAG_COLORS[r.magnet_id] || "#999" : "#8a8f9c";
-    bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 7, 0, 7); bctx.fill();
-    bctx.strokeStyle = "#12141a"; bctx.stroke();
-    if (PRED[r.run_id] && !r.valid) {
-      bctx.strokeStyle = "#ffd97c"; bctx.lineWidth = 2;
-      bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 10, 0, 7); bctx.stroke();
-      bctx.lineWidth = 1;
-    }
-    if (r.run_id === selectedRun) {
-      bctx.strokeStyle = "#ffffff"; bctx.lineWidth = 2;
-      bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 11, 0, 7); bctx.stroke();
-      bctx.lineWidth = 1;
-    }
-  }
-}
-
-function renderStatCards() {
-  const s = dropStats();
-  document.getElementById("statCards").innerHTML = `
-    <div class="stat"><b>${s.total}</b><span>real drops recorded</span></div>
-    <div class="stat"><b>${s.valid}</b><span>successfully measured</span></div>
-    <div class="stat"><b style="color:${MAG_COLORS[0]}">${s.wins[0]}</b><span>won by M0</span></div>
-    <div class="stat"><b style="color:${MAG_COLORS[1]}">${s.wins[1]}</b><span>won by M1</span></div>
-    <div class="stat"><b style="color:${MAG_COLORS[2]}">${s.wins[2]}</b><span>won by M2</span></div>
-    <div class="stat"><b style="color:#ffd97c">${s.simulated}</b><span>simulated fills</span></div>`;
-}
-
-function renderRuns() {
-  drawRunsCanvas();
-  renderStatCards();
-  const showInvalid = !document.getElementById("hideInvalid").checked;
-  const rows = RUNS.filter(r => showInvalid || r.valid);
-  document.getElementById("runsInfo").textContent =
-    "updated " + new Date().toLocaleTimeString() + " · " +
-    RUNS.length + " drops recorded" +
-    (TUNED ? ` · simulation tuned with F=${TUNED.F}, damping=${TUNED.c}` : "");
-  // friendly table
-  document.getElementById("runsTable").innerHTML =
-    "<table><tr><th>drop</th><th>started at</th><th>caught by</th><th>status</th></tr>" +
-    rows.map(r => {
-      const sel = r.run_id === selectedRun ? " class='selected'" : "";
-      const win = r.valid && r.magnet_id >= 0 ?
-        `<b style="color:${MAG_COLORS[r.magnet_id]}">M${r.magnet_id}</b>` : "—";
-      const status = (r.video || "").includes("[SIMULATED]") ?
-        '<span class="badge sim">simulated</span>' :
-        `<span class="badge ${r.valid ? "ok" : "bad"}">${r.valid ? "measured" : "failed"}</span>`;
-      return `<tr data-run="${r.run_id}"${sel}>` +
-        `<td>${r.run_id}</td>` +
-        `<td>(${Math.round(r.start_x)}, ${Math.round(r.start_y)})</td>` +
-        `<td>${win}</td><td>${status}</td></tr>`;
-    }).join("") + "</table>" +
-    (rows.length ? "" : '<span class="muted">no drops to show</span>');
-  document.querySelectorAll("#runsTable tr[data-run]").forEach(tr => {
-    tr.onclick = () => selectRun(+tr.dataset.run);
-  });
-  // technical table (hidden behind details)
-  document.getElementById("techTable").innerHTML =
-    "<table><tr><th>#</th><th>video</th><th>magnet</th><th>dist px</th>" +
-    "<th>frames seen</th><th>valid</th><th>note</th></tr>" +
-    RUNS.map(r => `<tr><td>${r.run_id}</td><td>${(r.video || "").replace(".mp4","")}</td>` +
-      `<td>${r.magnet_id}</td><td>${Math.round(r.dist_px)}</td>` +
-      `<td>${Math.round(r.detection_ratio * 100)}%</td>` +
-      `<td class="${r.valid ? "ok" : "bad"}">${r.valid}</td>` +
-      `<td>${r.note || ""}</td></tr>`).join("") + "</table>";
-  document.getElementById("gallery").innerHTML = (window.__images || [])
-    .filter(n => n.startsWith("cal_"))
-    .map(n => `<div class="muted">${n}</div><img src="/img?name=${encodeURIComponent(n)}">`)
-    .join("");
-}
-
-function selectRun(id) {
-  selectedRun = id;
-  const r = RUNS.find(x => x.run_id === id);
-  const cap = document.getElementById("dropCaption");
-  if (r) {
-    let txt = r.valid
-      ? `Drop #${id}: released near (${Math.round(r.start_x)}, ${Math.round(r.start_y)}) — ` +
-        `the bob was caught by magnet M${r.magnet_id}. The blue line is the path it took.`
-      : `Drop #${id}: this recording could not be measured — ${plainNote(r)}.` +
-        (PRED[id] ? ` The dashed golden arrow shows the simulated prediction.` : "");
-    cap.textContent = txt;
-  }
-  const file = TRAJS.find(f => f.startsWith("run_" + id + "_"));
-  if (file) {
-    fetch("/api/traj?name=" + encodeURIComponent(file)).then(x => x.text()).then(text => {
-      window.__trajPts = text.trim().split("\n").slice(1)
-        .map(l => l.split(",")).filter(p => p.length >= 4)
-        .map(p => [+p[1], +p[2], +p[3]]);
-      renderRuns();
+    document.querySelectorAll("[data-nav-btn]").forEach(btn => {
+      btn.addEventListener("click", () => switchTab(btn.dataset.tab));
     });
-  } else { window.__trajPts = null; renderRuns(); }
-}
 
-async function loadRuns() {
-  try {
-    RUNS = (await api("/api/results")).rows;
-    TRAJS = (await api("/api/trajectories")).files;
-    window.__images = (await api("/api/images")).images;
-  } catch (err) {
-    document.getElementById("runsTable").innerHTML =
-      '<span class="bad">failed to load results: ' + err + "</span>";
-    return;
-  }
-  renderRuns();
-  computeZonesIfFirst();
-}
+    // Hide nav-dots for inactive tabs on boot
+    document.querySelectorAll("[data-nav-btn]:not(.nav-active) .nav-dot").forEach(d => d.style.display = "none");
 
-// predicted zones: simulate a grid of drop positions with the tuned physics
-function computeZonesIfFirst() {
-  if (zonesReady || !zoneToggle.checked) { drawRunsCanvas(); return; }
-  ensureTuned();
-  document.getElementById("runsInfo").textContent = "computing predicted zones…";
-  requestAnimationFrame(() => {
-    zoneLayer = document.createElement("canvas");
-    zoneLayer.width = zoneLayer.height = 800;
-    const zctx = zoneLayer.getContext("2d");
-    const cell = 20;
-    for (let gy = 10; gy < 800; gy += cell)
-      for (let gx = 10; gx < 800; gx += cell) {
-        if (!insideCanon(gx, gy, 6)) continue;
-        const res = simulatePath({ x: gx, y: gy }, TUNED.F, TUNED.c, 380, 3000);
-        if (res.capture >= 0) {
-          zctx.fillStyle = MAG_COLORS[res.capture] + "40";
-          zctx.fillRect(gx - cell/2, gy - cell/2, cell, cell);
+    // ================= SHARED PHYSICS =================
+    // One step function used by the simulator, basin map, and predictor.
+    function canonAccel(x, y, F, magnets) {      // softened 1/d^2 attraction
+      let ax = 0, ay = 0;
+      for (const [mx, my] of magnets) {
+        const dx = mx - x, dy = my - y;
+        const d2 = dx*dx + dy*dy;
+        const mag = F * 1e6 / (d2 + 4000);
+        const d = Math.sqrt(d2);
+        ax += mag * dx / d; ay += mag * dy / d;
+      }
+      return [ax, ay];
+    }
+    function physicsStep(st, F, c, L, magnets, walls, hub) {
+      const [ax, ay] = canonAccel(st.x, st.y, F, magnets);
+      st.vx = (st.vx + ax * (1/240)) * Math.exp(-c * (1/240));
+      st.vy = (st.vy + ay * (1/240)) * Math.exp(-c * (1/240));
+      st.x += st.vx * (1/240); st.y += st.vy * (1/240);
+      for (const w of walls) {                   // wooden walls: bounce, damped
+        const s = st.x * w.nx + st.y * w.ny - w.off;
+        if (s > 0) {
+          st.x -= w.nx * s; st.y -= w.ny * s;
+          const vn = st.vx * w.nx + st.vy * w.ny;
+          if (vn > 0) { st.vx -= 1.4 * vn * w.nx; st.vy -= 1.4 * vn * w.ny; }
         }
       }
-    zonesReady = true;
-    renderRuns();
-  });
-}
-function insideCanon(x, y, margin) {
-  let verts = CFG_MAG.map((m, i) => {
-    const a = CFG_MAG[(i + 1) % 3], b = CFG_MAG[(i + 2) % 3];
-    return [a[0] + b[0] - m[0], a[1] + b[1] - m[1]];
-  });
-  // point in triangle (barycentric, origin at verts[0]) with a px margin
-  const e0x = verts[1][0] - verts[0][0], e0y = verts[1][1] - verts[0][1];
-  const e1x = verts[2][0] - verts[0][0], e1y = verts[2][1] - verts[0][1];
-  const dx = x - verts[0][0], dy = y - verts[0][1];
-  const det = e0x * e1y - e0y * e1x;
-  const u = (dx * e1y - dy * e1x) / det;
-  const v = (e0x * dy - e0y * dx) / det;
-  const m = margin / Math.sqrt(Math.abs(det)) * 2;
-  return u >= -m && v >= -m && u + v <= 1 + m;
-}
-document.getElementById("zoneToggle").onchange = drawRunsCanvas;
-
-document.getElementById("refreshRuns").onclick = loadRuns;
-document.getElementById("hideInvalid").onchange = renderRuns;
-document.getElementById("basin").addEventListener("click", e => {
-  const r = document.getElementById("basin").getBoundingClientRect();
-  const x = (e.clientX - r.left) * 800 / r.width;
-  const y = (e.clientY - r.top) * 800 / r.height;
-  let best = null, bd = 15;
-  for (const run of RUNS) {
-    const d = Math.hypot(run.start_x - x, run.start_y - y);
-    if (d < bd) { bd = d; best = run; }
-  }
-  if (best) selectRun(best.run_id);
-});
-
-// ---- prediction engine ----
-function ensureTuned() {
-  if (TUNED) return TUNED;
-  const valid = RUNS.filter(r => r.valid && r.start_x >= 0 &&
-    !(r.video || "").includes("[SIMULATED]"));
-  if (!valid.length) { TUNED = { F: 12, c: 0.25, hits: 0, total: 0 }; return TUNED; }
-  let best = null;
-  for (let F = 4; F <= 20; F += 4)
-    for (let c = 0.1; c <= 1.61; c += 0.5) {
-      let hits = 0;
-      for (const r of valid) {
-        const res = simulatePath({ x: r.start_x, y: r.start_y }, F, c, 380);
-        if (res.capture === r.magnet_id) hits++;
+      const dx = st.x - hub[0], dy = st.y - hub[1], r = Math.hypot(dx, dy);
+      if (r > L) {                               // string goes taut
+        st.x = hub[0] + dx * L / r; st.y = hub[1] + dy * L / r;
+        const nx = dx / r, ny = dy / r, vr = st.vx*nx + st.vy*ny;
+        if (vr > 0) { st.vx -= vr * nx; st.vy -= vr * ny; }
       }
-      if (!best || hits > best.hits) best = { F, c, hits };
     }
-  best.total = valid.length;
-  TUNED = best;
-  return TUNED;
-}
-document.getElementById("predictBtn").onclick = () => {
-  const t = ensureTuned();
-  PRED = {};
-  for (const r of RUNS.filter(r => !r.valid && r.start_x >= 0 &&
-      !(r.video || "").includes("[SIMULATED]"))) {
-    PRED[r.run_id] = simulatePath({ x: r.start_x, y: r.start_y }, t.F, t.c, 380);
-  }
-  zonesReady = false;                       // recompute zones with new info
-  renderRuns();
-  computeZonesIfFirst();
-  document.getElementById("dropCaption").textContent =
-    `Simulated ${Object.keys(PRED).length} failed drops using physics parameters ` +
-    `tuned on the successful recordings (F=${t.F}, damping=${t.c} — they reproduce ` +
-    `${t.hits} of ${t.total} measured drops).`;
-};
-document.getElementById("appendBtn").onclick = async () => {
-  if (!Object.keys(PRED).length) return;
-  const t = ensureTuned();
-  for (const [id, p] of Object.entries(PRED)) {
-    const r = RUNS.find(x => x.run_id == id);
-    if (!r) continue;
-    await api("/api/append_prediction", { method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ run_id: +id, video: r.video, magnet_id: p.capture,
-                             dist_px: Math.round(p.dist), start_x: r.start_x,
-                             start_y: r.start_y, end_x: p.end.x, end_y: p.end.y,
-                             params: `F=${t.F}, c=${t.c}` }) });
-  }
-  PRED = {}; zonesReady = false;
-  await loadRuns();
-};
+    function nearestMagnet(x, y, magnets) {
+      let best = -1, bd = 1e9;
+      magnets.forEach(([mx, my], i) => {
+        const d = Math.hypot(x - mx, y - my);
+        if (d < bd) { bd = d; best = i; }
+      });
+      return { i: bd < 100 ? best : -1, d: bd };
+    }
+    // full drop simulation in canonical coordinates
+    function simulatePath(start, F, c, L, maxSteps = 6000) {
+      const st = { x: start.x, y: start.y, vx: 0, vy: 0 };
+      const path = [[st.x, st.y]];
+      let steps = 0, capture = -1;
+      for (; steps < maxSteps; steps++) {
+        physicsStep(st, F, c, L, CFG_MAG, CANON_WALLS, HUB);
+        path.push([st.x, st.y]);
+        if (steps > 30 && Math.hypot(st.vx, st.vy) < 3) break;
+      }
+      const n = nearestMagnet(st.x, st.y, CFG_MAG);
+      capture = n.i;
+      return { path, capture, dist: n.d, end: { x: st.x, y: st.y }, steps };
+    }
 
-// ================= VIDEOS =================
-async function loadVideos() {
-  const { videos } = await api("/api/videos");
-  document.getElementById("videoList").innerHTML = videos.map(v =>
-    `<div class="videoItem"><span>${v}</span>
-     <button class="act" data-video="${v}">Analyze</button></div>`).join("")
-    || '<span class="muted">no videos found in Videos/</span>';
-  document.querySelectorAll("#videoList button").forEach(b =>
-    b.onclick = () => analyze(b.dataset.video, b));
-}
-function trajFileFor(r) {
-  return TRAJS.find(f => f.startsWith("run_" + r.run_id + "_"));
-}
-function drawMini(canvas, rows) {
-  const ctx = canvas.getContext("2d");
-  const s = canvas.width / 800;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = MAG_COLORS[0];
-  CFG_MAG.forEach(([mx, my], i) => {
-    ctx.fillStyle = MAG_COLORS[i];
-    ctx.beginPath(); ctx.arc(mx * s, my * s, 4, 0, 7); ctx.fill();
-  });
-  if (rows.length > 1) {
-    ctx.strokeStyle = "rgba(120,200,255,.8)";
-    ctx.beginPath(); ctx.moveTo(rows[0][1] * s, rows[0][2] * s);
-    for (const p of rows) ctx.lineTo(p[1] * s, p[2] * s);
-    ctx.stroke();
-    ctx.fillStyle = "#fff";
-    ctx.beginPath(); ctx.arc(rows[0][1] * s, rows[0][2] * s, 3, 0, 7); ctx.fill();
-  }
-}
-async function trajRowsFor(r) {
-  const file = trajFileFor(r);
-  if (!file) return null;
-  const text = await (await fetch("/api/traj?name=" + encodeURIComponent(file))).text();
-  return text.trim().split("\n").slice(1)
-    .map(l => l.split(",")).filter(p => p.length >= 4)
-    .map(p => [+p[1], +p[2], +p[3]]);
-}
-function resultCard(r) {
-  return `<div class="card">
-    <div class="row"><b>${(r.video || "").replace(".mp4","")}</b>
-      <span class="badge ${r.valid ? "ok" : "bad"}">${r.valid ? "valid" : "invalid"}</span>
-      ${r.note ? `<span class="muted">${r.note}</span>` : ""}</div>
-    <canvas class="minitraj" data-run="${r.run_id}" width="220" height="220"></canvas>
-    <div class="muted">
-      start (${Math.round(r.start_x)}, ${Math.round(r.start_y)}) →
-      end (${Math.round(r.end_x)}, ${Math.round(r.end_y)})<br>
-      captured by <b style="color:${r.valid ? MAG_COLORS[r.magnet_id] || "#999" : "#999"}">${r.valid ? "M" + r.magnet_id : "—"}</b>
-      at ${Math.round(r.dist_px)} px · ${Math.round(r.duration_s)} s ·
-      bob seen ${Math.round(r.detection_ratio * 100)}% of frames
-    </div>
-  </div>`;
-}
-async function renderCards(rows) {
-  document.getElementById("cards").innerHTML = rows.map(resultCard).join("");
-  for (const canvas of document.querySelectorAll(".minitraj")) {
-    const r = rows.find(x => x.run_id == canvas.dataset.run);
-    if (!r) continue;
-    const pts = await trajRowsFor(r);
-    if (pts) drawMini(canvas, pts);
-  }
-}
-async function analyze(video, btn) {
-  const log = document.getElementById("log");
-  if (btn) { btn.disabled = true; btn.textContent = "working…"; }
-  log.textContent = `Analyzing ${video} — this can take a minute…`;
-  try {
-    const data = await api("/api/analyze", { method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ video }) });
-    log.textContent = data.log;
-    TRAJS = (await api("/api/trajectories")).files;
-    const rows = data.results.filter(r => r.video === video || video === "*");
-    const latestPerVideo = {};
-    for (const r of rows) latestPerVideo[r.video] = r;
-    await renderCards(Object.values(latestPerVideo));
-    window.__images = data.images;
-  } catch (err) {
-    log.textContent = "failed: " + err;
-  }
-  if (btn) { btn.disabled = false; btn.textContent = "Analyze"; }
-}
-document.getElementById("analyzeAll").onclick = e => analyze("*", e.target);
-document.getElementById("refreshVideos").onclick = loadVideos;
+    // ================= SIMULATOR =================
+    const sim = document.getElementById("sim"), sctx = sim.getContext("2d");
+    let basinLayer = null;
+    let bob = { x: 400, y: 250, vx: 0, vy: 0 };
+    let running = false, trail = [], quiet = 0, raf = null, simTime = 0;
 
-// ================= PHOTO =================
-let PHOTO = null;   // {img, H, Hinv, path, predicted}
-function mat3Apply(H, x, y) {
-  const X = H[0]*x + H[1]*y + H[2], Y = H[3]*x + H[4]*y + H[5], W = H[6]*x + H[7]*y + H[8];
-  return [X / W, Y / W];
-}
-function mat3Invert(H) {
-  const [a, b, c, d, e, f, g, h, i] = H;
-  const A = e*i - f*h, B = c*h - b*i, C = b*f - c*e;
-  const D = f*g - d*i, E = a*i - c*g, F = c*d - a*f;
-  const G = d*h - e*g, Hh = b*g - a*h, I = a*e - b*d;
-  const det = a*A + b*D + c*G;
-  return [A/det, B/det, C/det, D/det, E/det, F/det, G/det, Hh/det, I/det];
-}
-async function uploadPhoto(bytes, type) {
-  const st = document.getElementById("photoStatus");
-  st.textContent = "uploading + detecting magnets…";
-  try {
-    const data = await api("/api/photo", { method: "POST",
-      headers: {"Content-Type": type || "image/jpeg"}, body: bytes });
-    if (!data.ok) { st.textContent = "detection failed: " + (data.error || "?"); return; }
-    const img = new Image();
-    img.onload = () => {
-      PHOTO = { img, H: data.homography, Hinv: mat3Invert(data.homography),
-                path: null, predicted: -1, w: img.width, h: img.height };
-      drawPhoto();
-      st.textContent = "magnets detected — click the photo to drop the pendulum.";
+    function clampToReach(p) {                   // board walls first, then string
+      for (const w of WALLS) {
+        const s = p.x * w.nx + p.y * w.ny - w.off;
+        if (s > 0) { p = { x: p.x - w.nx * s, y: p.y - w.ny * s }; }
+      }
+      const dx = p.x - SIM_HUB[0], dy = p.y - SIM_HUB[1], r = Math.hypot(dx, dy), L = +len.value;
+      if (r > L) return { x: SIM_HUB[0] + dx * L / r, y: SIM_HUB[1] + dy * L / r };
+      return p;
+    }
+    function simStep(dt) {                       // delegates to the shared physics
+      physicsStep(bob, +force.value, +damp.value, +len.value, MAG, WALLS, SIM_HUB);
+    }
+    function capturedBy() { return nearestMagnet(bob.x, bob.y, MAG).i; }
+
+    function frame() {
+      if (running) {
+        for (let i = 0; i < 4; i++) physicsStep(bob, +force.value, +damp.value,
+                                                +len.value, MAG, WALLS, SIM_HUB);
+        simTime += 1/60;
+        trail.push([bob.x, bob.y]);
+        if (trail.length > 3000) trail.shift();
+        const speed = Math.hypot(bob.vx, bob.vy);
+        quiet = speed < 3 ? quiet + 1 : 0;
+        if (quiet > 120 || simTime > 90) {
+          running = false;
+          const n = nearestMagnet(bob.x, bob.y, MAG);
+          document.getElementById("simStatus").textContent =
+            (quiet > 120 ? "Settled — " : "Still moving after 90 s — ") +
+            (n.i >= 0 ? `last near magnet M${n.i} (${Math.round(n.d)} px away).`
+                      : "no capture — string too long or force too weak.");
+        }
+      }
+      const n = nearestMagnet(bob.x, bob.y, MAG);
+      document.getElementById("live").textContent =
+        "speed " + Math.round(Math.hypot(bob.vx, bob.vy)) +
+        " px/s  ·  nearest magnet M" + n.i + " at " + Math.round(n.d) + " px";
+      drawSim();
+      raf = requestAnimationFrame(frame);
+    }
+
+    function drawSim() {
+      sctx.clearRect(0, 0, 800, 800);
+      if (basinLayer) sctx.drawImage(basinLayer, 0, 0);
+      sctx.strokeStyle = "#5a5f70"; sctx.lineWidth = 3;
+      sctx.beginPath(); sctx.moveTo(...BOARD[0]);
+      sctx.lineTo(...BOARD[1]); sctx.lineTo(...BOARD[2]); sctx.closePath();
+      sctx.stroke(); sctx.lineWidth = 1;
+      sctx.fillStyle = "#8a90a5"; sctx.fillRect(SIM_HUB[0]-5, SIM_HUB[1]-5, 10, 10);
+      MAG.forEach(([mx, my], i) => {
+        sctx.fillStyle = MAG_COLORS[i];
+        sctx.beginPath(); sctx.arc(mx, my, 11, 0, 7); sctx.fill();
+        sctx.fillStyle = "#e8eaf0"; sctx.font = "14px sans-serif";
+        sctx.fillText("M" + i, mx + 14, my - 10);
+      });
+      if (trail.length > 1) {
+        sctx.strokeStyle = "rgba(120,200,255,.75)"; sctx.lineWidth = 1.5;
+        sctx.beginPath(); sctx.moveTo(trail[0][0], trail[0][1]);
+        for (const [x, y] of trail) sctx.lineTo(x, y);
+        sctx.stroke(); sctx.lineWidth = 1;
+      }
+      sctx.strokeStyle = "rgba(200,200,210,.35)";
+      sctx.beginPath(); sctx.moveTo(SIM_HUB[0], SIM_HUB[1]); sctx.lineTo(bob.x, bob.y); sctx.stroke();
+      sctx.fillStyle = "#ffffff";
+      sctx.beginPath(); sctx.arc(bob.x, bob.y, 8, 0, 7); sctx.fill();
+    }
+
+    function drop() {
+      trail = []; quiet = 0; simTime = 0; running = true;
+      document.getElementById("simStatus").textContent = "Swinging…";
+    }
+    let dragging = false;
+    function canvasPos(e) {
+      const r = sim.getBoundingClientRect();
+      return clampToReach({ x: (e.clientX - r.left) * 800 / r.width,
+                            y: (e.clientY - r.top) * 800 / r.height });
+    }
+    sim.addEventListener("pointerdown", e => {
+      dragging = true; running = false; bob = { ...canvasPos(e), vx: 0, vy: 0 };
+      trail = []; sim.setPointerCapture(e.pointerId);
+    });
+    sim.addEventListener("pointermove", e => { if (dragging) bob = { ...canvasPos(e), vx: 0, vy: 0 }; });
+    sim.addEventListener("pointerup", () => { if (dragging) { dragging = false; drop(); } });
+
+    for (const id of ["force", "damp", "len"])
+      document.getElementById(id).oninput = e =>
+        document.getElementById(id + "Val").textContent =
+          (+e.target.value).toFixed(id === "damp" ? 2 : 0);
+
+    // ---- theoretical basin map ----
+    function computeBasin() {
+      const F = +force.value, c = +damp.value, L = +len.value;
+      basinLayer = document.createElement("canvas");
+      basinLayer.width = basinLayer.height = 800;
+      const bctx = basinLayer.getContext("2d");
+      const cell = 10;
+      document.getElementById("simStatus").textContent = "Computing basin map…";
+      requestAnimationFrame(() => {
+        for (let gy = 5; gy < 800; gy += cell) {
+          for (let gx = 5; gx < 800; gx += cell) {
+            if (!insideBoard(gx, gy, 8)) continue;
+            const res = simulatePath({ x: gx, y: gy }, F, c, L);
+            bctx.fillStyle = res.capture >= 0 ? MAG_COLORS[res.capture] + "99" : "#88888830";
+            bctx.fillRect(gx - cell/2, gy - cell/2, cell, cell);
+          }
+        }
+        document.getElementById("simStatus").textContent =
+          "Basin map ready — each colored pixel is a drop position, colored by " +
+          "the magnet that captures it. Change a slider and recompute: the " +
+          "boundary moves and splits (that splitting IS the chaos).";
+        drawSim();
+      });
+    }
+    document.getElementById("basinBtn").onclick = computeBasin;
+    document.getElementById("clearBtn").onclick = () => { basinLayer = null; drawSim(); };
+    loadConfig().then(() => drawSim());
+    frame();
+
+    // ================= REAL RUNS =================
+    let RUNS = [], TRAJS = [], PRED = {}, selectedRun = null, TUNED = null;
+    let zoneLayer = null, zonesReady = false;
+
+    // plain-language version of the tracker's technical notes
+    function plainNote(r) {
+      const n = (r.note || "").toLowerCase();
+      if (r.video && r.video.includes("[SIMULATED]")) return "simulated prediction";
+      if (n.includes("far from all magnets")) return "the bob was never caught — it stopped far from every magnet (string too long or no real drop)";
+      if (n.includes("unsettled")) return "the video ended before the bob stopped moving";
+      if (n.includes("near/on a magnet")) return "the bob stopped right on a magnet";
+      if (n.includes("never detected")) return "the bob was never found in the video";
+      return r.note || "";
+    }
+
+    function dropStats() {
+      // simulated rows are predictions, not measurements — keep them out of the
+      // "measured" numbers so the headline stats stay honest.
+      const real = RUNS.filter(r => !(r.video || "").includes("[SIMULATED]"));
+      const valid = real.filter(r => r.valid);
+      const wins = [0, 0, 0];
+      valid.forEach(r => { if (r.magnet_id >= 0 && r.magnet_id <= 2) wins[r.magnet_id]++; });
+      const simulated = RUNS.length - real.length;
+      return { total: real.length, valid: valid.length, wins, simulated };
+    }
+
+    function drawRunsCanvas() {
+      const bctx = document.getElementById("basin").getContext("2d");
+      bctx.clearRect(0, 0, 800, 800);
+      if (zoneToggle.checked && zoneLayer) bctx.drawImage(zoneLayer, 0, 0);
+      // board triangle
+      let verts = CFG_MAG.map((m, i) => {
+        const a = CFG_MAG[(i + 1) % 3], b = CFG_MAG[(i + 2) % 3];
+        return [a[0] + b[0] - m[0], a[1] + b[1] - m[1]];
+      });
+      bctx.strokeStyle = "#6a7085"; bctx.lineWidth = 3;
+      bctx.beginPath(); bctx.moveTo(...verts[0]);
+      bctx.lineTo(...verts[1]); bctx.lineTo(...verts[2]); bctx.closePath();
+      bctx.stroke(); bctx.lineWidth = 1;
+      bctx.fillStyle = "#8a90a5"; bctx.fillRect(HUB[0]-5, HUB[1]-5, 10, 10);
+      CFG_MAG.forEach(([mx, my], i) => {
+        bctx.fillStyle = MAG_COLORS[i];
+        bctx.beginPath(); bctx.arc(mx, my, 12, 0, 7); bctx.fill();
+        bctx.fillStyle = "#e8eaf0"; bctx.font = "bold 15px sans-serif";
+        bctx.fillText("M" + i, mx + 15, my - 11);
+      });
+      // simulated prediction paths (dashed golden)
+      for (const [id, p] of Object.entries(PRED)) {
+        if (p.path.length < 2) continue;
+        bctx.strokeStyle = "rgba(255,217,124,.85)"; bctx.setLineDash([7, 6]);
+        bctx.beginPath(); bctx.moveTo(p.path[0][0], p.path[0][1]);
+        for (const [x, y] of p.path) bctx.lineTo(x, y);
+        bctx.stroke(); bctx.setLineDash([]);
+      }
+      // selected run's real trajectory
+      if (selectedRun != null && window.__trajPts && window.__trajPts.length > 1) {
+        const pts = window.__trajPts;
+        for (let i = 1; i < pts.length; i++) {
+          const a = i / pts.length;
+          bctx.strokeStyle = `rgba(${Math.round(80 + 175 * a)},${Math.round(200 - 80 * a)},255,${0.25 + 0.6 * a})`;
+          bctx.beginPath(); bctx.moveTo(pts[i-1][1], pts[i-1][2]);
+          bctx.lineTo(pts[i][1], pts[i][2]); bctx.stroke();
+        }
+        bctx.fillStyle = "#fff";
+        bctx.beginPath(); bctx.arc(pts[0][1], pts[0][2], 5, 0, 7); bctx.fill();
+      }
+      // drop dots
+      const showInvalid = !document.getElementById("hideInvalid").checked;
+      for (const r of RUNS) {
+        if (!showInvalid && !r.valid) continue;
+        bctx.fillStyle = r.valid ? MAG_COLORS[r.magnet_id] || "#999" : "#8a8f9c";
+        bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 7, 0, 7); bctx.fill();
+        bctx.strokeStyle = "#12141a"; bctx.stroke();
+        if (PRED[r.run_id] && !r.valid) {
+          bctx.strokeStyle = "#ffd97c"; bctx.lineWidth = 2;
+          bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 10, 0, 7); bctx.stroke();
+          bctx.lineWidth = 1;
+        }
+        if (r.run_id === selectedRun) {
+          bctx.strokeStyle = "#ffffff"; bctx.lineWidth = 2;
+          bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 11, 0, 7); bctx.stroke();
+          bctx.lineWidth = 1;
+        }
+      }
+    }
+
+    function renderStatCards() {
+      const s = dropStats();
+      document.getElementById("statCards").innerHTML = `
+        <div class="border border-zinc-800 bg-zinc-900/50 rounded-lg p-2.5 flex flex-col justify-center"><span class="text-base font-semibold font-mono text-white">${s.total}</span><span class="text-[11px] text-zinc-500">real drops recorded</span></div>
+        <div class="border border-zinc-800 bg-zinc-900/50 rounded-lg p-2.5 flex flex-col justify-center"><span class="text-base font-semibold font-mono text-emerald-400">${s.valid}</span><span class="text-[11px] text-zinc-500">successfully measured</span></div>
+        <div class="border border-zinc-800 bg-zinc-900/50 rounded-lg p-2.5 flex flex-col justify-center"><span class="text-base font-semibold font-mono text-rose-400">${s.wins[0]}</span><span class="text-[11px] text-zinc-500">won by M0</span></div>
+        <div class="border border-zinc-800 bg-zinc-900/50 rounded-lg p-2.5 flex flex-col justify-center"><span class="text-base font-semibold font-mono text-emerald-400">${s.wins[1]}</span><span class="text-[11px] text-zinc-500">won by M1</span></div>
+        <div class="border border-zinc-800 bg-zinc-900/50 rounded-lg p-2.5 flex flex-col justify-center"><span class="text-base font-semibold font-mono text-purple-400">${s.wins[2]}</span><span class="text-[11px] text-zinc-500">won by M2</span></div>
+        <div class="border border-zinc-800 bg-zinc-900/50 rounded-lg p-2.5 flex flex-col justify-center"><span class="text-base font-semibold font-mono text-cyan-400">${s.simulated}</span><span class="text-[11px] text-zinc-500">simulated fills</span></div>`;
+    }
+
+    function renderRuns() {
+      drawRunsCanvas();
+      renderStatCards();
+      const showInvalid = !document.getElementById("hideInvalid").checked;
+      const rows = RUNS.filter(r => showInvalid || r.valid);
+      document.getElementById("runsInfo").textContent =
+        "updated " + new Date().toLocaleTimeString() + " · " +
+        RUNS.length + " drops recorded" +
+        (TUNED ? ` · simulation tuned with F=${TUNED.F}, damping=${TUNED.c}` : "");
+      // friendly table
+      document.getElementById("runsTable").innerHTML =
+        `<table class="w-full border-collapse text-left">
+          <thead class="sticky top-0 bg-zinc-950 z-10 border-b border-zinc-800 text-[11px] text-zinc-400 uppercase tracking-wider">
+            <tr><th class="py-2 px-2.5 font-medium">Drop</th><th class="py-2 px-2 font-medium">Started at</th><th class="py-2 px-2 font-medium">Caught by</th><th class="py-2 px-2.5 font-medium">Status</th></tr>
+          </thead><tbody class="divide-y divide-zinc-800/60 text-zinc-300 text-[11px]">` +
+        rows.map(r => {
+          const sel = r.run_id === selectedRun ? " class='bg-zinc-800/60'" : "";
+          const win = r.valid && r.magnet_id >= 0 ?
+            `<b style="color:${MAG_COLORS[r.magnet_id]}">M${r.magnet_id}</b>` : "—";
+          const status = (r.video || "").includes("[SIMULATED]") ?
+            '<span class="badge sim">simulated</span>' :
+            `<span class="badge ${r.valid ? "ok" : "bad"}">${r.valid ? "measured" : "failed"}</span>`;
+          return `<tr data-run="${r.run_id}"${sel} class="hover:bg-zinc-900/50 cursor-pointer">` +
+            `<td class="py-1.5 px-2.5 font-medium text-white">#${r.run_id}</td>` +
+            `<td class="py-1.5 px-2 text-zinc-400">(${Math.round(r.start_x)}, ${Math.round(r.start_y)})</td>` +
+            `<td class="py-1.5 px-2">${win}</td><td class="py-1.5 px-2.5">${status}</td></tr>`;
+        }).join("") + "</tbody></table>" +
+        (rows.length ? "" : '<span class="text-zinc-500 p-3 block">no drops to show</span>');
+      document.querySelectorAll("#runsTable tr[data-run]").forEach(tr => {
+        tr.onclick = () => selectRun(+tr.dataset.run);
+      });
+      // technical table (hidden behind details)
+      document.getElementById("techTable").innerHTML =
+        "<table class='data-table'><tr><th>#</th><th>video</th><th>magnet</th><th>dist px</th>" +
+        "<th>frames seen</th><th>valid</th><th>note</th></tr>" +
+        RUNS.map(r => `<tr><td>${r.run_id}</td><td>${(r.video || "").replace(".mp4","")}</td>` +
+          `<td>${r.magnet_id}</td><td>${Math.round(r.dist_px)}</td>` +
+          `<td>${Math.round(r.detection_ratio * 100)}%</td>` +
+          `<td class="${r.valid ? "ok" : "bad"}">${r.valid}</td>` +
+          `<td>${r.note || ""}</td></tr>`).join("") + "</table>";
+      document.getElementById("gallery").innerHTML = (window.__images || [])
+        .filter(n => n.startsWith("cal_"))
+        .map(n => `<div class="text-zinc-500 text-xs mt-2">${n}</div><img src="/img?name=${encodeURIComponent(n)}" class="rounded-lg border border-zinc-700 my-1">`)
+        .join("");
+    }
+
+    function selectRun(id) {
+      selectedRun = id;
+      const r = RUNS.find(x => x.run_id === id);
+      const cap = document.getElementById("dropCaption");
+      if (r) {
+        let txt = r.valid
+          ? `Drop #${id}: released near (${Math.round(r.start_x)}, ${Math.round(r.start_y)}) — ` +
+            `the bob was caught by magnet M${r.magnet_id}. The blue line is the path it took.`
+          : `Drop #${id}: this recording could not be measured — ${plainNote(r)}.` +
+            (PRED[id] ? ` The dashed golden arrow shows the simulated prediction.` : "");
+        cap.textContent = txt;
+      }
+      const file = TRAJS.find(f => f.startsWith("run_" + id + "_"));
+      if (file) {
+        fetch("/api/traj?name=" + encodeURIComponent(file)).then(x => x.text()).then(text => {
+          window.__trajPts = text.trim().split("\n").slice(1)
+            .map(l => l.split(",")).filter(p => p.length >= 4)
+            .map(p => [+p[1], +p[2], +p[3]]);
+          renderRuns();
+        });
+      } else { window.__trajPts = null; renderRuns(); }
+    }
+
+    async function loadRuns() {
+      try {
+        RUNS = (await api("/api/results")).rows;
+        TRAJS = (await api("/api/trajectories")).files;
+        window.__images = (await api("/api/images")).images;
+      } catch (err) {
+        document.getElementById("runsTable").innerHTML =
+          '<span class="text-red-400 p-3 block">failed to load results: ' + err + "</span>";
+        return;
+      }
+      renderRuns();
+      computeZonesIfFirst();
+    }
+
+    // predicted zones: simulate a grid of drop positions with the tuned physics
+    function computeZonesIfFirst() {
+      if (zonesReady || !zoneToggle.checked) { drawRunsCanvas(); return; }
+      ensureTuned();
+      document.getElementById("runsInfo").textContent = "computing predicted zones…";
+      requestAnimationFrame(() => {
+        zoneLayer = document.createElement("canvas");
+        zoneLayer.width = zoneLayer.height = 800;
+        const zctx = zoneLayer.getContext("2d");
+        const cell = 20;
+        for (let gy = 10; gy < 800; gy += cell)
+          for (let gx = 10; gx < 800; gx += cell) {
+            if (!insideCanon(gx, gy, 6)) continue;
+            const res = simulatePath({ x: gx, y: gy }, TUNED.F, TUNED.c, 380, 3000);
+            if (res.capture >= 0) {
+              zctx.fillStyle = MAG_COLORS[res.capture] + "40";
+              zctx.fillRect(gx - cell/2, gy - cell/2, cell, cell);
+            }
+          }
+        zonesReady = true;
+        renderRuns();
+      });
+    }
+    function insideCanon(x, y, margin) {
+      let verts = CFG_MAG.map((m, i) => {
+        const a = CFG_MAG[(i + 1) % 3], b = CFG_MAG[(i + 2) % 3];
+        return [a[0] + b[0] - m[0], a[1] + b[1] - m[1]];
+      });
+      const e0x = verts[1][0] - verts[0][0], e0y = verts[1][1] - verts[0][1];
+      const e1x = verts[2][0] - verts[0][0], e1y = verts[2][1] - verts[0][1];
+      const dx = x - verts[0][0], dy = y - verts[0][1];
+      const det = e0x * e1y - e0y * e1x;
+      const u = (dx * e1y - dy * e1x) / det;
+      const v = (e0x * dy - e0y * dx) / det;
+      const m = margin / Math.sqrt(Math.abs(det)) * 2;
+      return u >= -m && v >= -m && u + v <= 1 + m;
+    }
+    document.getElementById("zoneToggle").onchange = drawRunsCanvas;
+
+    document.getElementById("refreshRuns").onclick = loadRuns;
+    document.getElementById("hideInvalid").onchange = renderRuns;
+    document.getElementById("basin").addEventListener("click", e => {
+      const r = document.getElementById("basin").getBoundingClientRect();
+      const x = (e.clientX - r.left) * 800 / r.width;
+      const y = (e.clientY - r.top) * 800 / r.height;
+      let best = null, bd = 15;
+      for (const run of RUNS) {
+        const d = Math.hypot(run.start_x - x, run.start_y - y);
+        if (d < bd) { bd = d; best = run; }
+      }
+      if (best) selectRun(best.run_id);
+    });
+
+    // ---- prediction engine ----
+    function ensureTuned() {
+      if (TUNED) return TUNED;
+      const valid = RUNS.filter(r => r.valid && r.start_x >= 0 &&
+        !(r.video || "").includes("[SIMULATED]"));
+      if (!valid.length) { TUNED = { F: 12, c: 0.25, hits: 0, total: 0 }; return TUNED; }
+      let best = null;
+      for (let F = 4; F <= 20; F += 4)
+        for (let c = 0.1; c <= 1.61; c += 0.5) {
+          let hits = 0;
+          for (const r of valid) {
+            const res = simulatePath({ x: r.start_x, y: r.start_y }, F, c, 380);
+            if (res.capture === r.magnet_id) hits++;
+          }
+          if (!best || hits > best.hits) best = { F, c, hits };
+        }
+      best.total = valid.length;
+      TUNED = best;
+      return TUNED;
+    }
+    document.getElementById("predictBtn").onclick = () => {
+      const t = ensureTuned();
+      PRED = {};
+      for (const r of RUNS.filter(r => !r.valid && r.start_x >= 0 &&
+          !(r.video || "").includes("[SIMULATED]"))) {
+        PRED[r.run_id] = simulatePath({ x: r.start_x, y: r.start_y }, t.F, t.c, 380);
+      }
+      zonesReady = false;                       // recompute zones with new info
+      renderRuns();
+      computeZonesIfFirst();
+      document.getElementById("dropCaption").textContent =
+        `Simulated ${Object.keys(PRED).length} failed drops using physics parameters ` +
+        `tuned on the successful recordings (F=${t.F}, damping=${t.c} — they reproduce ` +
+        `${t.hits} of ${t.total} measured drops).`;
     };
-    img.src = "/img?name=" + encodeURIComponent(data.annotated);
-  } catch (err) { st.textContent = "failed: " + err; }
-}
-document.getElementById("photoFile").onchange = async e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  await uploadPhoto(await file.arrayBuffer(), file.type);
-};
-function drawPhoto() {
-  const pc = document.getElementById("photo");
-  const scale = Math.min(640 / PHOTO.w, 640 / PHOTO.h, 1);
-  pc.width = Math.round(PHOTO.w * scale);
-  pc.height = Math.round(PHOTO.h * scale);
-  const ctx = pc.getContext("2d");
-  ctx.drawImage(PHOTO.img, 0, 0, pc.width, pc.height);
-  if (PHOTO.path && PHOTO.path.length > 1) {
-    ctx.strokeStyle = "rgba(120,200,255,.9)"; ctx.lineWidth = 2;
-    ctx.beginPath();
-    const p0 = mat3Apply(PHOTO.Hinv, PHOTO.path[0][0], PHOTO.path[0][1]);
-    ctx.moveTo(p0[0] * scale, p0[1] * scale);
-    for (const [cx, cy] of PHOTO.path) {
-      const q = mat3Apply(PHOTO.Hinv, cx, cy);
-      ctx.lineTo(q[0] * scale, q[1] * scale);
+    document.getElementById("appendBtn").onclick = async () => {
+      if (!Object.keys(PRED).length) return;
+      const t = ensureTuned();
+      for (const [id, p] of Object.entries(PRED)) {
+        const r = RUNS.find(x => x.run_id == id);
+        if (!r) continue;
+        await api("/api/append_prediction", { method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ run_id: +id, video: r.video, magnet_id: p.capture,
+                                 dist_px: Math.round(p.dist), start_x: r.start_x,
+                                 start_y: r.start_y, end_x: p.end.x, end_y: p.end.y,
+                                 params: `F=${t.F}, c=${t.c}` }) });
+      }
+      PRED = {}; zonesReady = false;
+      await loadRuns();
+    };
+
+    // ================= VIDEOS =================
+    async function loadVideos() {
+      const { videos } = await api("/api/videos");
+      document.getElementById("videoList").innerHTML = videos.map(v =>
+        `<div class="videoItem"><span>${v}</span>
+         <button class="px-2.5 py-1 text-xs rounded border border-zinc-700 hover:border-cyan-400 hover:text-cyan-400 text-zinc-300 transition-colors font-mono" data-video="${v}">Analyze</button></div>`).join("")
+        || '<span class="text-zinc-500 text-xs">no videos found in Videos/</span>';
+      document.querySelectorAll("#videoList button").forEach(b =>
+        b.onclick = () => analyze(b.dataset.video, b));
     }
-    ctx.stroke(); ctx.lineWidth = 1;
-    const end = mat3Apply(PHOTO.Hinv, PHOTO.end.x, PHOTO.end.y);
-    ctx.fillStyle = PHOTO.predicted >= 0 ? MAG_COLORS[PHOTO.predicted] : "#888";
-    ctx.beginPath(); ctx.arc(end[0] * scale, end[1] * scale, 9, 0, 7); ctx.fill();
-  }
-}
-document.getElementById("photo").addEventListener("click", e => {
-  if (!PHOTO) return;
-  const r = document.getElementById("photo").getBoundingClientRect();
-  const px = (e.clientX - r.left) * (PHOTO.img.width / r.width);
-  const py = (e.clientY - r.top) * (PHOTO.img.height / r.height);
-  const [cx, cy] = mat3Apply(PHOTO.H, px, py);
-  const t = ensureTuned();
-  const res = simulatePath({ x: cx, y: cy }, t.F, t.c, 380);
-  PHOTO.path = res.path; PHOTO.end = res.end; PHOTO.predicted = res.capture;
-  drawPhoto();
-  const st = document.getElementById("photoStatus");
-  st.textContent = res.capture >= 0
-    ? `Predicted: captured by magnet M${res.capture} (${Math.round(res.dist)} px from it), settling in ~${Math.round(res.steps / 240)} s.`
-    : "Predicted: no capture from this drop (string too short or force too weak).";
-});
-</script>
+    function trajFileFor(r) {
+      return TRAJS.find(f => f.startsWith("run_" + r.run_id + "_"));
+    }
+    function drawMini(canvas, rows) {
+      const ctx = canvas.getContext("2d");
+      const s = canvas.width / 800;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = MAG_COLORS[0];
+      CFG_MAG.forEach(([mx, my], i) => {
+        ctx.fillStyle = MAG_COLORS[i];
+        ctx.beginPath(); ctx.arc(mx * s, my * s, 4, 0, 7); ctx.fill();
+      });
+      if (rows.length > 1) {
+        ctx.strokeStyle = "rgba(120,200,255,.8)";
+        ctx.beginPath(); ctx.moveTo(rows[0][1] * s, rows[0][2] * s);
+        for (const p of rows) ctx.lineTo(p[1] * s, p[2] * s);
+        ctx.stroke();
+        ctx.fillStyle = "#fff";
+        ctx.beginPath(); ctx.arc(rows[0][1] * s, rows[0][2] * s, 3, 0, 7); ctx.fill();
+      }
+    }
+    async function trajRowsFor(r) {
+      const file = trajFileFor(r);
+      if (!file) return null;
+      const text = await (await fetch("/api/traj?name=" + encodeURIComponent(file))).text();
+      return text.trim().split("\n").slice(1)
+        .map(l => l.split(",")).filter(p => p.length >= 4)
+        .map(p => [+p[1], +p[2], +p[3]]);
+    }
+    function resultCard(r) {
+      return `<div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col justify-between shadow-2xl">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-sm font-medium text-white truncate max-w-[210px]">${(r.video || "").replace(".mp4","")}</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium ${r.valid ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500" : "bg-rose-500/20 text-rose-400 border border-rose-500"}">${r.valid ? "valid" : "invalid"}</span>
+        </div>
+        <canvas class="minitraj rounded-lg border border-zinc-800 block mx-auto my-2" data-run="${r.run_id}" width="220" height="220" style="background:#0b0c10"></canvas>
+        <div class="space-y-1 text-xs text-zinc-400 font-mono mt-2 pt-2 border-t border-zinc-800/80">
+          <div><span class="text-zinc-500">start/end:</span> (${Math.round(r.start_x)}, ${Math.round(r.start_y)}) → (${Math.round(r.end_x)}, ${Math.round(r.end_y)})</div>
+          <div><span class="text-zinc-500">captured by:</span> <b style="color:${r.valid ? MAG_COLORS[r.magnet_id] || "#999" : "#999"}">${r.valid ? "M" + r.magnet_id : "—"}</b> at ${Math.round(r.dist_px)} px · ${Math.round(r.duration_s)} s · bob seen ${Math.round(r.detection_ratio * 100)}% of frames</div>
+          ${r.note ? `<div class="text-zinc-500">${r.note}</div>` : ""}
+        </div>
+      </div>`;
+    }
+    async function renderCards(rows) {
+      document.getElementById("cards").innerHTML = rows.map(resultCard).join("");
+      for (const canvas of document.querySelectorAll(".minitraj")) {
+        const r = rows.find(x => x.run_id == canvas.dataset.run);
+        if (!r) continue;
+        const pts = await trajRowsFor(r);
+        if (pts) drawMini(canvas, pts);
+      }
+    }
+    async function analyze(video, btn) {
+      const log = document.getElementById("log");
+      if (btn) { btn.disabled = true; btn.textContent = "working…"; }
+      log.textContent = `Analyzing ${video} — this can take a minute…`;
+      try {
+        const data = await api("/api/analyze", { method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ video }) });
+        log.textContent = data.log;
+        TRAJS = (await api("/api/trajectories")).files;
+        const rows = data.results.filter(r => r.video === video || video === "*");
+        const latestPerVideo = {};
+        for (const r of rows) latestPerVideo[r.video] = r;
+        await renderCards(Object.values(latestPerVideo));
+        window.__images = data.images;
+      } catch (err) {
+        log.textContent = "failed: " + err;
+      }
+      if (btn) { btn.disabled = false; btn.textContent = "Analyze"; }
+    }
+    document.getElementById("analyzeAll").onclick = e => analyze("*", e.target);
+    document.getElementById("refreshVideos").onclick = loadVideos;
+
+    // ================= PHOTO =================
+    let PHOTO = null;   // {img, H, Hinv, path, predicted}
+    function mat3Apply(H, x, y) {
+      const X = H[0]*x + H[1]*y + H[2], Y = H[3]*x + H[4]*y + H[5], W = H[6]*x + H[7]*y + H[8];
+      return [X / W, Y / W];
+    }
+    function mat3Invert(H) {
+      const [a, b, c, d, e, f, g, h, i] = H;
+      const A = e*i - f*h, B = c*h - b*i, C = b*f - c*e;
+      const D = f*g - d*i, E = a*i - c*g, F = c*d - a*f;
+      const G = d*h - e*g, Hh = b*g - a*h, I = a*e - b*d;
+      const det = a*A + b*D + c*G;
+      return [A/det, B/det, C/det, D/det, E/det, F/det, G/det, Hh/det, I/det];
+    }
+    async function uploadPhoto(bytes, type) {
+      const st = document.getElementById("photoStatus");
+      st.innerHTML = 'Status: <span class="text-amber-300">uploading + detecting magnets…</span>';
+      try {
+        const data = await api("/api/photo", { method: "POST",
+          headers: {"Content-Type": type || "image/jpeg"}, body: bytes });
+        if (!data.ok) { st.innerHTML = 'Status: <span class="text-red-400">detection failed: ' + (data.error || "?") + "</span>"; return; }
+        const img = new Image();
+        img.onload = () => {
+          PHOTO = { img, H: data.homography, Hinv: mat3Invert(data.homography),
+                    path: null, predicted: -1, w: img.width, h: img.height };
+          drawPhoto();
+          st.innerHTML = 'Status: <span class="text-emerald-400">magnets detected — click the photo to drop the pendulum.</span>';
+        };
+        img.src = "/img?name=" + encodeURIComponent(data.annotated);
+      } catch (err) { st.innerHTML = 'Status: <span class="text-red-400">failed: ' + err + "</span>"; }
+    }
+    document.getElementById("photoFile").onchange = async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      await uploadPhoto(await file.arrayBuffer(), file.type);
+    };
+    function drawPhoto() {
+      const pc = document.getElementById("photo");
+      const scale = Math.min(640 / PHOTO.w, 480 / PHOTO.h, 1);
+      pc.width = Math.round(PHOTO.w * scale);
+      pc.height = Math.round(PHOTO.h * scale);
+      const ctx = pc.getContext("2d");
+      ctx.drawImage(PHOTO.img, 0, 0, pc.width, pc.height);
+      if (PHOTO.path && PHOTO.path.length > 1) {
+        ctx.strokeStyle = "rgba(120,200,255,.9)"; ctx.lineWidth = 2;
+        ctx.beginPath();
+        const p0 = mat3Apply(PHOTO.Hinv, PHOTO.path[0][0], PHOTO.path[0][1]);
+        ctx.moveTo(p0[0] * scale, p0[1] * scale);
+        for (const [cx, cy] of PHOTO.path) {
+          const q = mat3Apply(PHOTO.Hinv, cx, cy);
+          ctx.lineTo(q[0] * scale, q[1] * scale);
+        }
+        ctx.stroke(); ctx.lineWidth = 1;
+        const end = mat3Apply(PHOTO.Hinv, PHOTO.end.x, PHOTO.end.y);
+        ctx.fillStyle = PHOTO.predicted >= 0 ? MAG_COLORS[PHOTO.predicted] : "#888";
+        ctx.beginPath(); ctx.arc(end[0] * scale, end[1] * scale, 9, 0, 7); ctx.fill();
+      }
+    }
+    document.getElementById("photo").addEventListener("click", e => {
+      if (!PHOTO) return;
+      const r = document.getElementById("photo").getBoundingClientRect();
+      const px = (e.clientX - r.left) * (PHOTO.img.width / r.width);
+      const py = (e.clientY - r.top) * (PHOTO.img.height / r.height);
+      const [cx, cy] = mat3Apply(PHOTO.H, px, py);
+      const t = ensureTuned();
+      const res = simulatePath({ x: cx, y: cy }, t.F, t.c, 380);
+      PHOTO.path = res.path; PHOTO.end = res.end; PHOTO.predicted = res.capture;
+      drawPhoto();
+      const st = document.getElementById("photoStatus");
+      st.innerHTML = res.capture >= 0
+        ? `Status: <span class="text-emerald-400">Predicted: captured by magnet M${res.capture} (${Math.round(res.dist)} px from it), settling in ~${Math.round(res.steps / 240)} s.</span>`
+        : 'Status: <span class="text-amber-300">Predicted: no capture from this drop (string too short or force too weak).</span>';
+      const live = document.getElementById("photoLive");
+      if (live) live.textContent = `drop @ (${Math.round(px)}, ${Math.round(py)}) → canonical (${Math.round(cx)}, ${Math.round(cy)})`;
+    });
+    </script>
 </body>
 </html>
