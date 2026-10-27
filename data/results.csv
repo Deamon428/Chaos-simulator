@@ -43,3 +43,17 @@ run_id,video,start_x,start_y,end_x,end_y,magnet_id,dist_px,duration_s,detection_
 42,physics-input.mp4 [SIMULATED],409,567.074,412.39113676476353,688.1251637846153,2,1,0,1.0,1,"simulated prediction (F=4, c=0.1)"
 43,WhatsApp Video 2026-10-26 at 19.42.50.mp4,305.858,546.249,307.525,549.586,2,174.021,2.5663,1,0,rest point far from all magnets (attraction not engaged or no drop)
 44,WhatsApp Video 2026-10-26 at 19.42.50.mp4,305.858,546.249,307.525,549.586,2,174.021,2.5663,1,0,rest point far from all magnets (attraction not engaged or no drop)
+45,WhatsApp Video 2026-10-26 at 19.39.48.mp4,415.981,247.725,270.275,325.704,1,174.546,5.5193,1,0,rest point far from all magnets (attraction not engaged or no drop)
+46,WhatsApp Video 2026-10-26 at 19.39.48.mp4,415.981,247.725,270.275,325.704,1,174.546,5.5193,1,0,rest point far from all magnets (attraction not engaged or no drop)
+46,WhatsApp Video 2026-10-26 at 19.42.50 (1).mp4,386.52,258.752,363.569,696.849,2,50.2171,6.23246,1,1,
+47,WhatsApp Video 2026-10-26 at 19.42.50.mp4,305.858,546.249,307.525,549.586,2,174.021,2.5663,1,0,rest point far from all magnets (attraction not engaged or no drop)
+48,WhatsApp Video 2026-10-26 at 19.39.48.mp4,415.981,247.725,270.275,325.704,1,174.546,5.5193,1,0,rest point far from all magnets (attraction not engaged or no drop)
+48,WhatsApp Video 2026-10-26 at 19.42.51.mp4,391.688,263.491,201.06,329.992,0,161.25,7.24115,0.819444,0,rest point far from all magnets (attraction not engaged or no drop)
+49,WhatsApp Video 2026-10-26 at 19.42.53 (1).mp4,367.837,263.211,371.996,260.849,1,69.9687,40.6149,0.0714286,0,unsettled at end of video
+50,WhatsApp Video 2026-10-26 at 19.42.53.mp4,119.283,516.809,89.5829,494.427,0,62.7021,4.61551,1,1,
+51,WhatsApp Video 2026-10-26 at 19.53.59.mp4,325.466,281.969,489.156,207.18,1,89.2469,4.73409,0.894366,1,
+52,WhatsApp Video 2026-10-26 at 19.54.03.mp4,490.737,208.263,489.798,207.653,1,89.22,40.361,0.059455,0,settled at video end
+53,WhatsApp Video 2026-10-26 at 19.42.50.mp4,305.858,546.249,307.525,549.586,2,174.021,2.5663,1,0,rest point far from all magnets (attraction not engaged or no drop)
+53,WhatsApp Video 2026-10-26 at 19.54.23.mp4,315.597,286.056,334.852,374.278,1,139.813,49.3669,0.177564,0,unsettled at end of video; rest point far from all magnets (attraction not engaged or no drop)
+54,WhatsApp Video 2026-10-26 at 19.42.53.mp4,119.283,516.809,89.5829,494.427,0,62.7021,4.61551,1,1,
+54,physics-input.mp4,409,567.074,366.065,587.074,2,111.305,36.6309,0.974522,0,rest point far from all magnets (attraction not engaged or no drop)

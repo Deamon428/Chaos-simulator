@@ -105,6 +105,20 @@ on the Runs tab; theoretical map in the simulator).
 - results.csv currently contains test duplicates + [SIMULATED] rows from
   verification; delete it and re-run the batch for a clean slate.
 
+## Runs-tab rewrite for judges (2026-10-27, latest)
+
+The "Real runs & basin map" tab was rewritten as a guided story for a
+non-technical audience (per user: science-fair judges): intro explaining the
+drop experiment in plain words, color legend, headline stat cards (real drops
+/ measured / wins per magnet / simulated fills — [SIMULATED] rows are EXCLUDED
+from the measured numbers), 4-step "how the software measures a drop" panel,
+plain-language failure notes (plainNote() maps technical notes), predicted
+zones background (canonical-space grid sim with tuned params, cached, toggle),
+click dot/row → trajectory + caption. Technical table + cal gallery remain
+behind a collapsed "Technical details" section. The tab-switching claim/
+release cycle of the in-app browser required re-claiming the user tab between
+test calls (iab tabs revert to user tabs at turn end).
+
 ## Next steps
 
 1. Re-record with ATTRACTION: string short enough that the bob reaches the

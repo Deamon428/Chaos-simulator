@@ -55,6 +55,17 @@
   .badge.bad { background:#421d1d; color:#ff8080; }
   .badge.sim { background:#3a2f1d; color:#ffd97c; }
   details summary { cursor:pointer; color:var(--dim); font-size:13px; margin:8px 0; }
+  .stats { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:10px 0; }
+  .stat { background:var(--bg); border:1px solid var(--line); border-radius:10px;
+          padding:8px 6px; text-align:center; }
+  .stat b { display:block; font-size:22px; }
+  .stat span { color:var(--dim); font-size:12px; }
+  .step { display:flex; gap:10px; margin:9px 0; align-items:flex-start; }
+  .stepnum { background:#3b4a86; color:#fff; border-radius:50%; min-width:24px;
+             height:24px; display:flex; align-items:center; justify-content:center;
+             font-size:13px; font-weight:600; }
+  .caption { background:#20263a; border:1px solid #3b4a86; border-radius:8px;
+             padding:9px 12px; margin:8px 0; font-size:14px; min-height:20px; }
 </style>
 </head>
 <body>
@@ -106,24 +117,62 @@
 
 <!-- ============ REAL RUNS ============ -->
 <section id="tab-runs" hidden>
-  <canvas id="basin" width="800" height="800"></canvas>
-  <div class="panel">
-    <div class="row"><b>Real drops</b>
-      <button class="act" id="refreshRuns">Refresh</button>
-      <span id="runsInfo" class="muted"></span></div>
+  <div style="flex:1.15; min-width:340px">
+    <canvas id="basin" width="800" height="800"></canvas>
     <div class="row">
-      <label class="muted"><input type="checkbox" id="hideInvalid"> hide invalid runs</label>
-      <button class="act" id="predictBtn">Simulate predictions for invalid runs</button>
-      <button class="act ghost" id="appendBtn">Save predictions to CSV</button>
+      <label class="muted"><input type="checkbox" id="zoneToggle" checked>
+        show predicted zones (simulation)</label>
+      <label class="muted"><input type="checkbox" id="hideInvalid">
+        successful drops only</label>
     </div>
-    <div class="muted">Each dot is one drop position, colored by the magnet that captured
-    it. Click a dot or a table row to draw the recorded trajectory. Invalid runs can be
-    predicted by simulation (dashed paths, tuned against the valid runs).</div>
+    <div class="row"><span id="runsInfo" class="muted"></span></div>
+  </div>
+  <div class="panel" style="max-width:560px">
+    <h2 style="font-size:18px; margin:4px 0 8px">Real drops on our magnetic board</h2>
+    <p style="margin:6px 0">We release the pendulum bob from different spots on the
+    triangular board. It swings, and one of the three magnets <b>catches</b> it.
+    Every dot on the map is one real drop: <b>where the dot is</b> = where we let the
+    bob go, <b>the dot's color</b> = which magnet won.</p>
+    <div class="legend">
+      <span><span class="dot" style="background:#ff5555"></span>caught by M0 (left)</span>
+      <span><span class="dot" style="background:#50fa7b"></span>caught by M1 (top)</span>
+      <span><span class="dot" style="background:#bd93f9"></span>caught by M2 (bottom)</span>
+      <span><span class="dot" style="background:#777"></span>recording failed</span>
+    </div>
+    <div class="stats" id="statCards"></div>
+    <div class="caption" id="dropCaption">Click any dot (or a row below) to see the
+    path the bob took for that drop.</div>
+    <div class="row" style="margin-top:12px"><b>How the software measures a drop</b></div>
+    <div class="step"><div class="stepnum">1</div><div>A phone camera films the board
+      from above while we release the bob.</div></div>
+    <div class="step"><div class="stepnum">2</div><div>The software finds the three
+      magnets and the center hub in the video automatically — no manual marking.</div></div>
+    <div class="step"><div class="stepnum">3</div><div>It follows the white bob in
+      every single frame and measures exactly where it stops.</div></div>
+    <div class="step"><div class="stepnum">4</div><div>The nearest magnet to the stopping
+      point wins, and the drop is added to the map above.</div></div>
+    <div class="row" style="margin-top:12px"><b>When a recording fails</b></div>
+    <p class="muted" style="margin:4px 0">Sometimes a recording can't be measured (the
+    bob hides a magnet, or the camera shakes). Then the computer <b>simulates what
+    would have happened</b> using the physics model — dashed golden arrows on the map.
+    These predictions are clearly marked and never mixed with real measurements.</p>
+    <div class="row">
+      <button class="act" id="refreshRuns">Reload data</button>
+      <button class="act" id="predictBtn">Fill failed drops by simulation</button>
+      <button class="act ghost" id="appendBtn">Save simulated results</button>
+    </div>
     <div id="runsTable"></div>
-    <div class="row"><b>Calibration &amp; overlay images</b></div>
-    <div id="gallery"></div>
+    <details><summary>Technical details &amp; calibration images</summary>
+      <div id="techTable"></div>
+      <div class="row"><b>Calibration previews</b>
+      <span class="muted">the software's guess of the magnet positions (red circles)
+      on one video frame — they must sit on the real magnets</span></div>
+      <div id="gallery"></div>
+    </details>
   </div>
 </section>
+
+<!-- ============ VIDEOS ============ --></section>
 
 <!-- ============ VIDEOS ============ -->
 <section id="tab-videos" hidden>
@@ -433,56 +482,165 @@ frame();
 
 // ================= REAL RUNS =================
 let RUNS = [], TRAJS = [], PRED = {}, selectedRun = null, TUNED = null;
+let zoneLayer = null, zonesReady = false;
+
+// plain-language version of the tracker's technical notes
+function plainNote(r) {
+  const n = (r.note || "").toLowerCase();
+  if (r.video && r.video.includes("[SIMULATED]")) return "simulated prediction";
+  if (n.includes("far from all magnets")) return "the bob was never caught — it stopped far from every magnet (string too long or no real drop)";
+  if (n.includes("unsettled")) return "the video ended before the bob stopped moving";
+  if (n.includes("near/on a magnet")) return "the bob stopped right on a magnet";
+  if (n.includes("never detected")) return "the bob was never found in the video";
+  return r.note || "";
+}
+
+function dropStats() {
+  // simulated rows are predictions, not measurements — keep them out of the
+  // "measured" numbers so the headline stats stay honest.
+  const real = RUNS.filter(r => !(r.video || "").includes("[SIMULATED]"));
+  const valid = real.filter(r => r.valid);
+  const wins = [0, 0, 0];
+  valid.forEach(r => { if (r.magnet_id >= 0 && r.magnet_id <= 2) wins[r.magnet_id]++; });
+  const simulated = RUNS.length - real.length;
+  return { total: real.length, valid: valid.length, wins, simulated };
+}
 
 function drawRunsCanvas() {
   const bctx = document.getElementById("basin").getContext("2d");
   bctx.clearRect(0, 0, 800, 800);
-  // board triangle (canonical space)
+  if (zoneToggle.checked && zoneLayer) bctx.drawImage(zoneLayer, 0, 0);
+  // board triangle
   let verts = CFG_MAG.map((m, i) => {
     const a = CFG_MAG[(i + 1) % 3], b = CFG_MAG[(i + 2) % 3];
     return [a[0] + b[0] - m[0], a[1] + b[1] - m[1]];
   });
-  bctx.strokeStyle = "#5a5f70"; bctx.lineWidth = 2;
+  bctx.strokeStyle = "#6a7085"; bctx.lineWidth = 3;
   bctx.beginPath(); bctx.moveTo(...verts[0]);
   bctx.lineTo(...verts[1]); bctx.lineTo(...verts[2]); bctx.closePath();
   bctx.stroke(); bctx.lineWidth = 1;
   bctx.fillStyle = "#8a90a5"; bctx.fillRect(HUB[0]-5, HUB[1]-5, 10, 10);
   CFG_MAG.forEach(([mx, my], i) => {
     bctx.fillStyle = MAG_COLORS[i];
-    bctx.beginPath(); bctx.arc(mx, my, 11, 0, 7); bctx.fill();
-    bctx.fillStyle = "#e8eaf0"; bctx.font = "14px sans-serif";
-    bctx.fillText("M" + i, mx + 14, my - 10);
+    bctx.beginPath(); bctx.arc(mx, my, 12, 0, 7); bctx.fill();
+    bctx.fillStyle = "#e8eaf0"; bctx.font = "bold 15px sans-serif";
+    bctx.fillText("M" + i, mx + 15, my - 11);
   });
-  // trajectories: predicted (dashed) first, then the selected run's real path
+  // simulated prediction paths (dashed golden)
   for (const [id, p] of Object.entries(PRED)) {
     if (p.path.length < 2) continue;
-    bctx.strokeStyle = "rgba(255,217,124,.8)"; bctx.setLineDash([6, 5]);
+    bctx.strokeStyle = "rgba(255,217,124,.85)"; bctx.setLineDash([7, 6]);
     bctx.beginPath(); bctx.moveTo(p.path[0][0], p.path[0][1]);
     for (const [x, y] of p.path) bctx.lineTo(x, y);
     bctx.stroke(); bctx.setLineDash([]);
   }
-  if (selectedRun != null) {
-    const file = TRAJS.find(f => f.startsWith("run_" + selectedRun + "_"));
-    if (file) drawTrajectoryOn(bctx, file);
+  // selected run's real trajectory
+  if (selectedRun != null && window.__trajPts && window.__trajPts.length > 1) {
+    const pts = window.__trajPts;
+    for (let i = 1; i < pts.length; i++) {
+      const a = i / pts.length;
+      bctx.strokeStyle = `rgba(${Math.round(80 + 175 * a)},${Math.round(200 - 80 * a)},255,${0.25 + 0.6 * a})`;
+      bctx.beginPath(); bctx.moveTo(pts[i-1][1], pts[i-1][2]);
+      bctx.lineTo(pts[i][1], pts[i][2]); bctx.stroke();
+    }
+    bctx.fillStyle = "#fff";
+    bctx.beginPath(); bctx.arc(pts[0][1], pts[0][2], 5, 0, 7); bctx.fill();
   }
   // drop dots
-  const rows = RUNS.filter(r => !document.getElementById("hideInvalid").checked || r.valid);
-  for (const r of rows) {
-    bctx.fillStyle = r.valid ? MAG_COLORS[r.magnet_id] || "#999" : "#777";
-    bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 6, 0, 7); bctx.fill();
+  const showInvalid = !document.getElementById("hideInvalid").checked;
+  for (const r of RUNS) {
+    if (!showInvalid && !r.valid) continue;
+    bctx.fillStyle = r.valid ? MAG_COLORS[r.magnet_id] || "#999" : "#8a8f9c";
+    bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 7, 0, 7); bctx.fill();
+    bctx.strokeStyle = "#12141a"; bctx.stroke();
     if (PRED[r.run_id] && !r.valid) {
-      bctx.strokeStyle = "#ffd97c";
-      bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 9, 0, 7); bctx.stroke();
+      bctx.strokeStyle = "#ffd97c"; bctx.lineWidth = 2;
+      bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 10, 0, 7); bctx.stroke();
+      bctx.lineWidth = 1;
     }
     if (r.run_id === selectedRun) {
       bctx.strokeStyle = "#ffffff"; bctx.lineWidth = 2;
-      bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 10, 0, 7); bctx.stroke();
+      bctx.beginPath(); bctx.arc(r.start_x, r.start_y, 11, 0, 7); bctx.stroke();
       bctx.lineWidth = 1;
     }
   }
 }
-function drawTrajectoryOn(bctx, file) {
-  // synchronous-ish: trajectories are small; fetch is async so cache first
+
+function renderStatCards() {
+  const s = dropStats();
+  document.getElementById("statCards").innerHTML = `
+    <div class="stat"><b>${s.total}</b><span>real drops recorded</span></div>
+    <div class="stat"><b>${s.valid}</b><span>successfully measured</span></div>
+    <div class="stat"><b style="color:${MAG_COLORS[0]}">${s.wins[0]}</b><span>won by M0</span></div>
+    <div class="stat"><b style="color:${MAG_COLORS[1]}">${s.wins[1]}</b><span>won by M1</span></div>
+    <div class="stat"><b style="color:${MAG_COLORS[2]}">${s.wins[2]}</b><span>won by M2</span></div>
+    <div class="stat"><b style="color:#ffd97c">${s.simulated}</b><span>simulated fills</span></div>`;
+}
+
+function renderRuns() {
+  drawRunsCanvas();
+  renderStatCards();
+  const showInvalid = !document.getElementById("hideInvalid").checked;
+  const rows = RUNS.filter(r => showInvalid || r.valid);
+  document.getElementById("runsInfo").textContent =
+    "updated " + new Date().toLocaleTimeString() + " · " +
+    RUNS.length + " drops recorded" +
+    (TUNED ? ` · simulation tuned with F=${TUNED.F}, damping=${TUNED.c}` : "");
+  // friendly table
+  document.getElementById("runsTable").innerHTML =
+    "<table><tr><th>drop</th><th>started at</th><th>caught by</th><th>status</th></tr>" +
+    rows.map(r => {
+      const sel = r.run_id === selectedRun ? " class='selected'" : "";
+      const win = r.valid && r.magnet_id >= 0 ?
+        `<b style="color:${MAG_COLORS[r.magnet_id]}">M${r.magnet_id}</b>` : "—";
+      const status = (r.video || "").includes("[SIMULATED]") ?
+        '<span class="badge sim">simulated</span>' :
+        `<span class="badge ${r.valid ? "ok" : "bad"}">${r.valid ? "measured" : "failed"}</span>`;
+      return `<tr data-run="${r.run_id}"${sel}>` +
+        `<td>${r.run_id}</td>` +
+        `<td>(${Math.round(r.start_x)}, ${Math.round(r.start_y)})</td>` +
+        `<td>${win}</td><td>${status}</td></tr>`;
+    }).join("") + "</table>" +
+    (rows.length ? "" : '<span class="muted">no drops to show</span>');
+  document.querySelectorAll("#runsTable tr[data-run]").forEach(tr => {
+    tr.onclick = () => selectRun(+tr.dataset.run);
+  });
+  // technical table (hidden behind details)
+  document.getElementById("techTable").innerHTML =
+    "<table><tr><th>#</th><th>video</th><th>magnet</th><th>dist px</th>" +
+    "<th>frames seen</th><th>valid</th><th>note</th></tr>" +
+    RUNS.map(r => `<tr><td>${r.run_id}</td><td>${(r.video || "").replace(".mp4","")}</td>` +
+      `<td>${r.magnet_id}</td><td>${Math.round(r.dist_px)}</td>` +
+      `<td>${Math.round(r.detection_ratio * 100)}%</td>` +
+      `<td class="${r.valid ? "ok" : "bad"}">${r.valid}</td>` +
+      `<td>${r.note || ""}</td></tr>`).join("") + "</table>";
+  document.getElementById("gallery").innerHTML = (window.__images || [])
+    .filter(n => n.startsWith("cal_"))
+    .map(n => `<div class="muted">${n}</div><img src="/img?name=${encodeURIComponent(n)}">`)
+    .join("");
+}
+
+function selectRun(id) {
+  selectedRun = id;
+  const r = RUNS.find(x => x.run_id === id);
+  const cap = document.getElementById("dropCaption");
+  if (r) {
+    let txt = r.valid
+      ? `Drop #${id}: released near (${Math.round(r.start_x)}, ${Math.round(r.start_y)}) — ` +
+        `the bob was caught by magnet M${r.magnet_id}. The blue line is the path it took.`
+      : `Drop #${id}: this recording could not be measured — ${plainNote(r)}.` +
+        (PRED[id] ? ` The dashed golden arrow shows the simulated prediction.` : "");
+    cap.textContent = txt;
+  }
+  const file = TRAJS.find(f => f.startsWith("run_" + id + "_"));
+  if (file) {
+    fetch("/api/traj?name=" + encodeURIComponent(file)).then(x => x.text()).then(text => {
+      window.__trajPts = text.trim().split("\n").slice(1)
+        .map(l => l.split(",")).filter(p => p.length >= 4)
+        .map(p => [+p[1], +p[2], +p[3]]);
+      renderRuns();
+    });
+  } else { window.__trajPts = null; renderRuns(); }
 }
 
 async function loadRuns() {
@@ -495,68 +653,50 @@ async function loadRuns() {
       '<span class="bad">failed to load results: ' + err + "</span>";
     return;
   }
-  // fetch any selected trajectory, then render
-  if (selectedRun != null) {
-    const file = TRAJS.find(f => f.startsWith("run_" + selectedRun + "_"));
-    if (file) {
-      try {
-        const text = await (await fetch("/api/traj?name=" + encodeURIComponent(file))).text();
-        window.__trajPts = text.trim().split("\n").slice(1)
-          .map(l => l.split(",")).filter(p => p.length >= 4)
-          .map(p => [+p[1], +p[2], +p[3]]);   // t, x, y
-      } catch (e) { window.__trajPts = null; }
-    } else window.__trajPts = null;
-  } else window.__trajPts = null;
   renderRuns();
+  computeZonesIfFirst();
 }
 
-function renderRuns() {
-  const showInvalid = !document.getElementById("hideInvalid").checked;
-  const bctx = document.getElementById("basin").getContext("2d");
-  drawRunsCanvas();
-  // draw the selected trajectory last (on top)
-  if (selectedRun != null && window.__trajPts && window.__trajPts.length > 1) {
-    const pts = window.__trajPts;
-    for (let i = 1; i < pts.length; i++) {
-      const a = i / pts.length;
-      bctx.strokeStyle = `rgba(${Math.round(80 + 175 * a)},${Math.round(200 - 80 * a)},255,${0.25 + 0.6 * a})`;
-      bctx.beginPath(); bctx.moveTo(pts[i-1][1], pts[i-1][2]);
-      bctx.lineTo(pts[i][1], pts[i][2]); bctx.stroke();
-    }
-    bctx.fillStyle = "#fff";
-    bctx.beginPath(); bctx.arc(pts[0][1], pts[0][2], 5, 0, 7); bctx.fill();
-  }
-  const rows = RUNS.filter(r => showInvalid || r.valid);
-  document.getElementById("runsInfo").textContent =
-    "updated " + new Date().toLocaleTimeString() + " · " +
-    RUNS.length + " runs (" + RUNS.filter(r => r.valid).length + " valid)" +
-    (TUNED ? ` · tuned F=${TUNED.F} c=${TUNED.c} (${TUNED.hits}/${TUNED.total} valid runs reproduced)` : "");
-  document.getElementById("runsTable").innerHTML =
-    "<table><tr><th>#</th><th>video</th><th>magnet</th><th>predicted</th><th>dist px</th>" +
-    "<th>frames seen</th><th>valid</th><th>note</th></tr>" +
-    rows.map(r => {
-      const p = PRED[r.run_id];
-      const sel = r.run_id === selectedRun ? " class='selected'" : "";
-      return `<tr data-run="${r.run_id}"${sel}>` +
-        `<td>${r.run_id}</td><td>${(r.video || "").replace(".mp4","")}</td>` +
-        `<td style="color:${r.valid ? MAG_COLORS[r.magnet_id] || "#999" : "#999"}">${r.valid ? "M"+r.magnet_id : "—"}</td>` +
-        `<td>${p ? `<span style="color:#ffd97c">M${p.capture}</span>` : "—"}</td>` +
-        `<td>${Math.round(r.dist_px)}</td><td>${Math.round(r.detection_ratio*100)}%</td>` +
-        `<td class="${r.valid ? "ok" : "bad"}">${r.valid ? "valid" : "invalid"}</td>` +
-        `<td>${r.note || ""}</td></tr>`;
-    }).join("") + "</table>";
-  // row click handlers
-  document.querySelectorAll("#runsTable tr[data-run]").forEach(tr => {
-    tr.onclick = () => {
-      selectedRun = +tr.dataset.run;
-      loadRuns();
-    };
+// predicted zones: simulate a grid of drop positions with the tuned physics
+function computeZonesIfFirst() {
+  if (zonesReady || !zoneToggle.checked) { drawRunsCanvas(); return; }
+  ensureTuned();
+  document.getElementById("runsInfo").textContent = "computing predicted zones…";
+  requestAnimationFrame(() => {
+    zoneLayer = document.createElement("canvas");
+    zoneLayer.width = zoneLayer.height = 800;
+    const zctx = zoneLayer.getContext("2d");
+    const cell = 20;
+    for (let gy = 10; gy < 800; gy += cell)
+      for (let gx = 10; gx < 800; gx += cell) {
+        if (!insideCanon(gx, gy, 6)) continue;
+        const res = simulatePath({ x: gx, y: gy }, TUNED.F, TUNED.c, 380, 3000);
+        if (res.capture >= 0) {
+          zctx.fillStyle = MAG_COLORS[res.capture] + "40";
+          zctx.fillRect(gx - cell/2, gy - cell/2, cell, cell);
+        }
+      }
+    zonesReady = true;
+    renderRuns();
   });
-  document.getElementById("gallery").innerHTML = (window.__images || [])
-    .filter(n => n.startsWith("cal_"))
-    .map(n => `<div class="muted">${n}</div><img src="/img?name=${encodeURIComponent(n)}">`)
-    .join("");
 }
+function insideCanon(x, y, margin) {
+  let verts = CFG_MAG.map((m, i) => {
+    const a = CFG_MAG[(i + 1) % 3], b = CFG_MAG[(i + 2) % 3];
+    return [a[0] + b[0] - m[0], a[1] + b[1] - m[1]];
+  });
+  // point in triangle (barycentric, origin at verts[0]) with a px margin
+  const e0x = verts[1][0] - verts[0][0], e0y = verts[1][1] - verts[0][1];
+  const e1x = verts[2][0] - verts[0][0], e1y = verts[2][1] - verts[0][1];
+  const dx = x - verts[0][0], dy = y - verts[0][1];
+  const det = e0x * e1y - e0y * e1x;
+  const u = (dx * e1y - dy * e1x) / det;
+  const v = (e0x * dy - e0y * dx) / det;
+  const m = margin / Math.sqrt(Math.abs(det)) * 2;
+  return u >= -m && v >= -m && u + v <= 1 + m;
+}
+document.getElementById("zoneToggle").onchange = drawRunsCanvas;
+
 document.getElementById("refreshRuns").onclick = loadRuns;
 document.getElementById("hideInvalid").onchange = renderRuns;
 document.getElementById("basin").addEventListener("click", e => {
@@ -568,13 +708,14 @@ document.getElementById("basin").addEventListener("click", e => {
     const d = Math.hypot(run.start_x - x, run.start_y - y);
     if (d < bd) { bd = d; best = run; }
   }
-  if (best) { selectedRun = best.run_id; loadRuns(); }
+  if (best) selectRun(best.run_id);
 });
 
 // ---- prediction engine ----
 function ensureTuned() {
   if (TUNED) return TUNED;
-  const valid = RUNS.filter(r => r.valid && r.start_x >= 0);
+  const valid = RUNS.filter(r => r.valid && r.start_x >= 0 &&
+    !(r.video || "").includes("[SIMULATED]"));
   if (!valid.length) { TUNED = { F: 12, c: 0.25, hits: 0, total: 0 }; return TUNED; }
   let best = null;
   for (let F = 4; F <= 20; F += 4)
@@ -593,10 +734,17 @@ function ensureTuned() {
 document.getElementById("predictBtn").onclick = () => {
   const t = ensureTuned();
   PRED = {};
-  for (const r of RUNS.filter(r => !r.valid && r.start_x >= 0)) {
+  for (const r of RUNS.filter(r => !r.valid && r.start_x >= 0 &&
+      !(r.video || "").includes("[SIMULATED]"))) {
     PRED[r.run_id] = simulatePath({ x: r.start_x, y: r.start_y }, t.F, t.c, 380);
   }
+  zonesReady = false;                       // recompute zones with new info
   renderRuns();
+  computeZonesIfFirst();
+  document.getElementById("dropCaption").textContent =
+    `Simulated ${Object.keys(PRED).length} failed drops using physics parameters ` +
+    `tuned on the successful recordings (F=${t.F}, damping=${t.c} — they reproduce ` +
+    `${t.hits} of ${t.total} measured drops).`;
 };
 document.getElementById("appendBtn").onclick = async () => {
   if (!Object.keys(PRED).length) return;
@@ -611,7 +759,7 @@ document.getElementById("appendBtn").onclick = async () => {
                              start_y: r.start_y, end_x: p.end.x, end_y: p.end.y,
                              params: `F=${t.F}, c=${t.c}` }) });
   }
-  PRED = {};
+  PRED = {}; zonesReady = false;
   await loadRuns();
 };
 
