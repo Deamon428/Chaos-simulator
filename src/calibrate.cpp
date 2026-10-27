@@ -12,7 +12,6 @@
 // OpenCV 5 moved getAffineTransform out of imgproc into geometry/2d.hpp.
 #include <opencv2/geometry/2d.hpp>
 
-#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <string>
