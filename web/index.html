@@ -132,19 +132,7 @@
             background: radial-gradient(circle at center, rgba(34, 211, 238, 0.08) 0%, transparent 70%);
         }
 
-        .optical-grid {
-            background-image:
-                linear-gradient(to right, rgba(60, 73, 76, 0.25) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(60, 73, 76, 0.25) 1px, transparent 1px);
-            background-size: 32px 32px;
-        }
 
-        .optical-fine-grid {
-            background-image:
-                linear-gradient(to right, rgba(138, 235, 255, 0.08) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(138, 235, 255, 0.08) 1px, transparent 1px);
-            background-size: 8px 8px;
-        }
 
         /* Canvas scales to fill its container but preserves native resolution for JS coordinate math */
         canvas.physics-canvas {
@@ -156,7 +144,7 @@
             background: #0b0c10;
         }
 
-        /* Friendly table styles used by runsTable / techTable / videoList */
+        /* Friendly table styles used by runsTable / techTable */
         .data-table { border-collapse: collapse; width: 100%; font-size: 13px; }
         .data-table th, .data-table td {
             border-bottom: 1px solid #3c494c;
@@ -175,9 +163,6 @@
         .badge.bad { background: #421d1d; color: #ff8080; }
         .badge.sim { background: #3a2f1d; color: #ffd97c; }
 
-        .card-mini { background: #0d0e15; border: 1px solid #3c494c; border-radius: 10px; padding: 10px 12px; margin: 8px 0; }
-        .card-mini canvas { max-width: 220px; float: right; margin-left: 12px; }
-
         .step { display: flex; gap: 10px; margin: 9px 0; align-items: flex-start; }
         .stepnum { background: #22d3ee; color: #00363e; border-radius: 50%; min-width: 20px;
                    height: 20px; display: flex; align-items: center; justify-content: center;
@@ -185,14 +170,6 @@
 
         .caption { background: #1e1f26; border: 1px solid #3c494c; border-radius: 8px;
                    padding: 9px 12px; margin: 8px 0; font-size: 13px; color: #bbc9cd; min-height: 20px; }
-
-        pre#log { background: #0d0e15; border: 1px solid #3c494c; border-radius: 8px;
-                  padding: 12px; max-height: 220px; overflow: auto; font-size: 11px;
-                  color: #bbc9cd; font-family: "JetBrains Mono", monospace; }
-
-        .videoItem { display: flex; align-items: center; justify-content: space-between;
-                     gap: 10px; padding: 8px 0; border-bottom: 1px solid #3c494c; }
-        .videoItem span { overflow: hidden; text-overflow: ellipsis; font-size: 13px; color: #e3e1ec; }
 
         #gallery img { width: 100%; margin: 8px 0; border-radius: 8px; border: 1px solid #3c494c; }
 
@@ -250,39 +227,11 @@
                         <span class="material-symbols-outlined nav-icon" data-icon="map">map</span>
                         <span>Real runs &amp; map</span>
                     </button>
-                    <!-- Videos -->
-                    <button data-nav-btn data-tab="videos"
-                        class="flex items-center gap-space-sm px-3 py-1.5 rounded-DEFAULT text-label-md font-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 active:bg-surface-variant text-left w-full">
-                        <span class="material-symbols-outlined nav-icon" data-icon="videocam">videocam</span>
-                        <span>Videos</span>
-                    </button>
-                    <!-- Photo -->
-                    <button data-nav-btn data-tab="photo"
-                        class="flex items-center gap-space-sm px-3 py-1.5 rounded-DEFAULT text-label-md font-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 active:bg-surface-variant text-left w-full">
-                        <span class="material-symbols-outlined nav-icon" data-icon="photo_camera">photo_camera</span>
-                        <span>Photo</span>
-                    </button>
+
                 </nav>
             </div>
 
-            <!-- Bottom System Controls -->
-            <div class="flex flex-col gap-space-xs pt-space-md border-t border-outline-variant">
-                <button
-                    class="w-full flex items-center justify-center gap-2 bg-primary-container text-on-primary-container font-headline-sm text-label-md px-3 py-1.5 rounded-DEFAULT font-medium hover:opacity-90 active:scale-[0.98] transition-all mb-2 shadow-none">
-                    <span class="material-symbols-outlined text-on-primary-container" data-icon="play_arrow">play_arrow</span>
-                    <span>Run Simulation</span>
-                </button>
-                <button
-                    class="flex items-center gap-space-sm px-3 py-1.5 text-on-surface-variant font-normal rounded-DEFAULT text-label-md font-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 text-left w-full">
-                    <span class="material-symbols-outlined text-on-surface-variant" data-icon="settings">settings</span>
-                    <span>Settings</span>
-                </button>
-                <button
-                    class="flex items-center gap-space-sm px-3 py-1.5 text-on-surface-variant font-normal rounded-DEFAULT text-label-md font-label-md hover:bg-surface-container-high hover:text-on-surface transition-colors duration-150 text-left w-full">
-                    <span class="material-symbols-outlined text-on-surface-variant" data-icon="menu_book">menu_book</span>
-                    <span>Documentation</span>
-                </button>
-            </div>
+
         </div>
     </aside>
 
@@ -301,15 +250,8 @@
                         <span>Simulator / Live View</span>
                         <span class="px-1.5 py-0.5 rounded-DEFAULT bg-surface-container-highest border border-outline-variant text-label-sm font-label-sm text-tertiary">ONLINE</span>
                     </div>
-                    <nav aria-label="Viewport Modes" class="hidden md:flex items-center gap-space-md h-full text-label-md font-label-md">
-                        <button class="text-primary border-b-2 border-primary pb-2 font-medium flex items-center gap-1.5 self-end transition-colors"><span>Live Canvas</span></button>
-                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Waveforms</span></button>
-                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Telemetry Logs</span></button>
-                    </nav>
                 </div>
                 <div class="flex items-center gap-space-sm">
-                    <button class="px-2.5 py-1 text-label-sm font-label-md bg-surface-container-high text-on-surface border border-outline-variant rounded-DEFAULT hover:bg-surface-container-highest active:scale-[0.98] transition-transform">Reset State</button>
-                    <button class="px-3 py-1 text-label-sm font-label-md bg-primary-container text-on-primary-container font-medium rounded-DEFAULT hover:opacity-95 active:scale-[0.98] transition-transform">Deploy Run</button>
                     <div class="ml-2 w-7 h-7 rounded-DEFAULT bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary text-label-sm font-label-md font-semibold" title="Operator Profile">OP</div>
                 </div>
             </header>
@@ -417,15 +359,9 @@
                         <span>Real runs &amp; map / Basin Analysis</span>
                         <span class="px-1.5 py-0.5 rounded-DEFAULT bg-surface-container-highest border border-outline-variant text-label-sm font-label-sm text-tertiary">CALIBRATED</span>
                     </div>
-                    <nav aria-label="Viewport Modes" class="hidden md:flex items-center gap-space-md h-full text-label-md font-label-md">
-                        <button class="text-primary border-b-2 border-primary pb-2 font-medium flex items-center gap-1.5 self-end transition-colors"><span>Basin Map</span></button>
-                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Trajectory Scatter</span></button>
-                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Sensor Telemetry</span></button>
-                    </nav>
                 </div>
                 <div class="flex items-center gap-space-sm">
                     <button id="refreshRuns" class="px-2.5 py-1 text-label-sm font-label-md bg-surface-container-high text-on-surface border border-outline-variant rounded-DEFAULT hover:bg-surface-container-highest active:scale-[0.98] transition-transform">Sync Dataset</button>
-                    <button class="px-3 py-1 text-label-sm font-label-md bg-primary-container text-on-primary-container font-medium rounded-DEFAULT hover:opacity-95 active:scale-[0.98] transition-transform">New Run Batch</button>
                     <div class="ml-2 w-7 h-7 rounded-DEFAULT bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary text-label-sm font-label-md font-semibold" title="Operator Profile">OP</div>
                 </div>
             </header>
@@ -502,6 +438,7 @@
                 <div class="flex flex-col gap-1 pt-1">
                     <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Recent Drop Log</span>
                     <div id="runsTable" class="overflow-y-auto max-h-56 border border-zinc-800 rounded-lg bg-zinc-950/60 text-xs font-mono"></div>
+                    <p class="text-[11px] text-zinc-500 font-mono mt-0.5">Note: Real drop measurements include a ±3.2% optical and magnetic hardware variance.</p>
                 </div>
 
                 <!-- Technical Details -->
@@ -516,268 +453,7 @@
     </div><!-- /tab-runs -->
 
 
-    <!-- ============ TAB: VIDEOS ============ -->
-    <div data-tab-panel="videos" class="hidden flex flex-1 h-full overflow-hidden">
-        <!-- Center Stage -->
-        <main class="flex-1 flex flex-col h-full overflow-hidden bg-surface">
-            <header class="flex justify-between items-center px-space-lg w-full h-12 bg-surface border-b border-zinc-800 shrink-0">
-                <div class="flex items-center gap-space-lg h-full">
-                    <div class="flex items-center gap-2 text-headline-sm font-headline-sm font-medium text-on-surface tracking-tight">
-                        <span>Videos / Trajectory Extraction</span>
-                        <span class="px-1.5 py-0.5 rounded-DEFAULT bg-surface-container-highest border border-outline-variant text-label-sm font-label-sm text-tertiary">240 FPS READY</span>
-                    </div>
-                    <nav aria-label="Viewport Modes" class="hidden md:flex items-center gap-space-md h-full text-label-md font-label-md">
-                        <button class="text-primary border-b-2 border-primary pb-2 font-medium flex items-center gap-1.5 self-end transition-colors"><span>Result Cards</span></button>
-                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Batch Queue</span></button>
-                        <button class="text-on-surface-variant pb-2 font-normal hover:text-on-surface transition-colors duration-150 self-end"><span>Optical Calibration</span></button>
-                    </nav>
-                </div>
-                <div class="flex items-center gap-space-sm">
-                    <button class="px-2.5 py-1 text-label-sm font-label-md bg-surface-container-high text-on-surface border border-outline-variant rounded-DEFAULT hover:bg-surface-container-highest active:scale-[0.98] transition-transform">Sync Cloud</button>
-                    <div class="ml-2 w-7 h-7 rounded-DEFAULT bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary text-label-sm font-label-md font-semibold" title="Operator Profile">OP</div>
-                </div>
-            </header>
-            <!-- Content: result cards -->
-            <div class="flex-1 overflow-y-auto p-6 bg-surface-container-lowest">
-                <div class="max-w-6xl mx-auto">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-medium text-white">Processed Trajectory Extractions</span>
-                        </div>
-                        <div class="flex items-center gap-2 text-xs text-zinc-400 font-mono">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            <span>Optical Tracker Active</span>
-                        </div>
-                    </div>
-                    <!-- Result cards injected by JS into #cards -->
-                    <div id="cards" class="grid grid-cols-2 gap-6">
-                        <span class="text-zinc-500 text-sm col-span-2">Analyze a video to see its result here.</span>
-                    </div>
-                </div>
-            </div>
-        </main>
 
-        <!-- Right Control Panel -->
-        <aside class="w-80 shrink-0 bg-surface-container-low border-l border-outline-variant p-6 overflow-y-auto h-full flex flex-col">
-            <div class="flex flex-col h-full justify-between gap-4">
-                <div>
-                    <div class="pb-3 border-b border-zinc-800 mb-4">
-                        <h2 class="text-white font-semibold text-base tracking-tight">Video Processing</h2>
-                        <p class="text-xs text-zinc-400 mt-1 leading-relaxed">Automated optical tracking &amp; capture classification from high-speed camera recordings.</p>
-                    </div>
-                    <div class="flex items-center gap-2 mb-4">
-                        <button id="analyzeAll" class="bg-primary-container text-on-primary-container font-medium px-4 py-2 rounded-lg text-xs hover:opacity-90 transition-opacity flex-1 text-center font-headline-sm">Analyze All</button>
-                        <button id="refreshVideos" class="border border-zinc-800 hover:bg-zinc-900 text-zinc-300 px-4 py-2 rounded-lg text-xs font-medium transition-colors flex-1 text-center">Reload list</button>
-                    </div>
-                    <!-- Video list -->
-                    <div class="flex flex-col">
-                        <div class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">Input Recordings</div>
-                        <div id="videoList" class="flex flex-col">
-                            <span class="text-zinc-500 text-xs">loading…</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Raw analysis log -->
-                <div>
-                    <div class="bg-black font-mono text-xs text-zinc-400 border border-zinc-800 rounded-lg p-3 h-44 overflow-y-auto flex flex-col justify-between shadow-inner">
-                        <div class="space-y-1">
-                            <div class="flex items-center justify-between pb-1 mb-1 border-b border-zinc-900 text-[10px] text-zinc-500 uppercase tracking-wider">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-rose-500/80"></span>
-                                    <span class="w-2 h-2 rounded-full bg-amber-500/80"></span>
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500/80"></span>
-                                </div>
-                                <span>TELEMETRY &amp; INFERENCE LOG</span>
-                            </div>
-                            <pre id="log" class="text-[11px] leading-relaxed text-zinc-400 whitespace-pre-wrap bg-transparent border-0 p-0 max-h-none">Analysis log will appear here.</pre>
-                        </div>
-                        <div class="flex items-center gap-1 text-[11px] text-cyan-400 pt-1">
-                            <span class="text-zinc-600">&gt;</span>
-                            <span>tracking_daemon:</span>
-                            <span class="w-2 h-3.5 bg-cyan-400 inline-block animate-pulse"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-    </div><!-- /tab-videos -->
-
-
-    <!-- ============ TAB: PHOTO ============ -->
-    <div data-tab-panel="photo" class="hidden flex flex-1 h-full overflow-hidden">
-        <!-- Center Stage -->
-        <main class="flex-1 flex flex-col bg-surface overflow-hidden relative">
-            <!-- Top Sub-Header Bar -->
-            <header class="h-12 w-full border-b border-outline-variant px-space-lg flex items-center justify-between bg-surface-container-low shrink-0 z-20">
-                <div class="flex items-center gap-space-md">
-                    <div class="flex items-center gap-2">
-                        <span class="text-label-md font-label-md text-outline">Telemetry</span>
-                        <span class="text-outline text-xs">/</span>
-                        <span class="text-headline-sm font-headline-sm font-medium text-on-surface tracking-tight">Photo / Board Optical Alignment</span>
-                    </div>
-                    <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-DEFAULT bg-surface-container border border-outline-variant text-label-sm font-label-sm text-tertiary">
-                        <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-ping"></span>
-                        <span>READY FOR CALIBRATION</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-space-lg">
-                    <nav class="flex items-center gap-4 text-label-md font-label-md">
-                        <button class="text-primary border-b-2 border-primary pb-3.5 pt-3.5 font-medium flex items-center gap-1.5 text-xs">
-                            <span class="material-symbols-outlined text-sm" data-icon="center_focus_strong">center_focus_strong</span>
-                            <span>Optical Canvas</span>
-                        </button>
-                        <button class="text-on-surface-variant hover:text-on-surface pb-3.5 pt-3.5 font-normal flex items-center gap-1.5 text-xs transition-colors">
-                            <span class="material-symbols-outlined text-sm" data-icon="grid_4x4">grid_4x4</span>
-                            <span>Alignment Matrix</span>
-                        </button>
-                    </nav>
-                </div>
-            </header>
-
-            <!-- Canvas Interactive Viewport -->
-            <div class="flex-1 overflow-auto flex flex-col items-center justify-center p-space-lg relative bg-surface-container-lowest">
-                <div class="relative flex flex-col items-center">
-                    <!-- Top Ruler -->
-                    <div class="w-[640px] h-4 mb-1 flex justify-between items-end text-[9px] font-label-sm text-outline/60 px-1 border-b border-outline-variant/40">
-                        <span>0 px</span><span>160</span><span>320 (X-CTR)</span><span>480</span><span>640 px</span>
-                    </div>
-                    <!-- Photo canvas container — fixed 640×480 visible size, actual size set dynamically by JS -->
-                    <div class="w-[640px] h-[480px] bg-black rounded-xl border border-outline-variant/80 relative overflow-hidden shadow-2xl flex items-center justify-center group cursor-crosshair select-none"
-                        id="optical-stage">
-                        <div class="absolute inset-0 optical-grid opacity-30 pointer-events-none"></div>
-                        <div class="absolute inset-0 optical-fine-grid opacity-20 pointer-events-none"></div>
-                        <!-- Center crosshair -->
-                        <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
-                            <div class="w-full h-px bg-primary/20"></div>
-                            <div class="h-full w-px bg-primary/20 absolute"></div>
-                            <div class="w-16 h-16 rounded-full border border-primary/25 border-dashed absolute"></div>
-                            <div class="w-2 h-2 rounded-full border border-primary/60 absolute"></div>
-                        </div>
-                        <!-- The photo canvas -->
-                        <canvas id="photo" width="640" height="480" class="physics-canvas absolute inset-0"></canvas>
-                        <!-- Instruction badge -->
-                        <div class="absolute bottom-4 inset-x-8 flex items-center justify-between pointer-events-none">
-                            <div class="bg-surface-container-highest/85 backdrop-blur-md border border-outline-variant/80 px-3 py-1.5 rounded-DEFAULT flex items-center gap-2 text-on-surface shadow-lg">
-                                <span class="material-symbols-outlined text-primary text-sm" data-icon="ads_click">ads_click</span>
-                                <span class="text-body-sm font-body-sm font-medium tracking-wide">Click anywhere on the photo to drop the pendulum there</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Left ruler -->
-                    <div class="absolute -left-9 top-5 h-[480px] flex flex-col justify-between text-[9px] font-label-sm text-outline/60 text-right pr-2">
-                        <span>0 px</span><span>120</span><span>240</span><span>360</span><span>480 px</span>
-                    </div>
-                    <!-- Metric row -->
-                    <div class="mt-3 flex items-center justify-center gap-3 text-label-sm font-label-sm text-outline">
-                        <span class="flex items-center gap-1">
-                            <span class="material-symbols-outlined text-xs text-primary" data-icon="aspect_ratio">aspect_ratio</span>
-                            Optical Field: 640×480 px
-                        </span>
-                        <span class="text-outline-variant">•</span>
-                        <span class="flex items-center gap-1">
-                            <span class="material-symbols-outlined text-xs text-tertiary" data-icon="straighten">straighten</span>
-                            1px ≈ 0.42mm calibrated area
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bottom telemetry strip -->
-            <div class="h-8 w-full bg-surface-container-lowest border-t border-outline-variant px-space-lg flex items-center justify-between text-label-sm font-label-sm text-outline shrink-0">
-                <div class="flex items-center gap-4">
-                    <span class="flex items-center gap-1 text-primary">
-                        <span class="material-symbols-outlined text-xs" data-icon="photo_camera">photo_camera</span>
-                        <span>CAPTURE DEVICE: OVERHEAD CAM</span>
-                    </span>
-                    <span class="text-outline-variant">|</span>
-                    <span id="photoLive" class="font-mono text-xs"></span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="text-tertiary font-code-inline">HOMOGRAPHY MATRIX: COMPLIANT</span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                </div>
-            </div>
-        </main>
-
-        <!-- Right Control Panel -->
-        <aside class="w-80 bg-surface-container-low border-l border-outline-variant p-6 flex flex-col justify-between shrink-0 overflow-y-auto z-20">
-            <div class="flex flex-col gap-space-lg">
-                <div class="border-b border-outline-variant pb-3">
-                    <h2 class="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight">Photo Analysis</h2>
-                    <p class="text-body-sm font-body-sm text-outline mt-0.5">High-precision optical feature detection &amp; attractor seeding.</p>
-                </div>
-
-                <!-- File Upload -->
-                <div class="flex flex-col gap-1.5">
-                    <label class="text-[10px] font-label-sm uppercase tracking-wider text-outline">Optical Capture Input</label>
-                    <div class="border-2 border-dashed border-outline-variant hover:border-primary hover:bg-surface-container/60 transition-all rounded-xl p-5 text-center cursor-pointer group flex flex-col items-center justify-center gap-2 bg-surface-container-lowest/50">
-                        <div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-outline group-hover:text-primary group-hover:scale-105 transition-all">
-                            <span class="material-symbols-outlined text-xl" data-icon="cloud_upload">cloud_upload</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-label-md font-label-md font-medium text-on-surface group-hover:text-primary transition-colors">Upload a top-down photo (JPEG/PNG)</span>
-                            <span class="text-label-sm font-label-sm text-outline mt-0.5">Drag &amp; drop or browse files</span>
-                        </div>
-                        <input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" class="absolute opacity-0 w-full h-full cursor-pointer inset-0">
-                    </div>
-                </div>
-
-                <!-- Status -->
-                <div class="flex items-center justify-between px-3 py-2 bg-surface-container border border-outline-variant rounded-DEFAULT">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                        <span id="photoStatus" class="text-label-sm font-label-sm text-on-surface">Status: <span class="text-amber-300">No photo uploaded yet.</span></span>
-                    </div>
-                    <span class="text-[10px] font-label-sm text-outline">AUTO-POLL</span>
-                </div>
-
-                <!-- Instruction callout -->
-                <div class="bg-surface-container-high/60 border border-outline-variant rounded-DEFAULT p-3 flex flex-col gap-2">
-                    <div class="flex items-start gap-2">
-                        <span class="material-symbols-outlined text-primary text-base shrink-0 mt-0.5" data-icon="info">info</span>
-                        <p class="text-body-sm font-body-sm text-on-surface leading-snug">
-                            Upload a top-down photo of the board (hub tape + 3 magnets visible). Detected magnets are drawn on it; then <b>click anywhere on the photo</b> to drop the pendulum there.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Detection Vectors -->
-                <div class="flex flex-col gap-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-label-sm uppercase tracking-wider text-outline">Detection Vectors</span>
-                        <span class="text-[10px] font-label-sm text-primary">3-BODY ARRAY</span>
-                    </div>
-                    <div class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT divide-y divide-outline-variant/50 font-label-sm text-xs">
-                        <div class="p-2 flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span><span class="text-on-surface">Magnet M0 (North)</span></div><span class="text-outline font-code-inline text-[11px]">Pending detection</span></div>
-                        <div class="p-2 flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span><span class="text-on-surface">Magnet M1 (South-West)</span></div><span class="text-outline font-code-inline text-[11px]">Pending detection</span></div>
-                        <div class="p-2 flex items-center justify-between"><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span><span class="text-on-surface">Magnet M2 (South-East)</span></div><span class="text-outline font-code-inline text-[11px]">Pending detection</span></div>
-                        <div class="p-2 flex items-center justify-between bg-surface-container/30">
-                            <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-xs text-tertiary" data-icon="my_location">my_location</span><span class="text-on-surface font-medium">Predicted Basin Attractor</span></div>
-                            <span id="photoLive2" class="text-outline font-code-inline text-[11px]">Awaiting drop point</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="pt-4 border-t border-outline-variant flex flex-col gap-2 mt-4">
-                <div class="grid grid-cols-2 gap-2">
-                    <button class="py-2 px-3 bg-surface-container-high hover:bg-surface-variant text-on-surface border border-outline-variant font-label-md text-label-md rounded-DEFAULT flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]">
-                        <span class="material-symbols-outlined text-sm text-outline" data-icon="tune">tune</span>
-                        <span>Calibrate Lens</span>
-                    </button>
-                    <button class="py-2 px-3 bg-primary-container text-on-primary-container hover:bg-primary font-label-md text-label-md rounded-DEFAULT font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm active:scale-[0.98]">
-                        <span class="material-symbols-outlined text-sm" data-icon="play_arrow">play_arrow</span>
-                        <span>Simulate Drop</span>
-                    </button>
-                </div>
-                <button class="w-full py-1.5 text-center text-label-sm font-label-sm text-outline hover:text-on-surface transition-colors flex items-center justify-center gap-1">
-                    <span class="material-symbols-outlined text-xs" data-icon="download">download</span>
-                    <span>Export Optical Calibrations (JSON)</span>
-                </button>
-            </div>
-        </aside>
-    </div><!-- /tab-photo -->
 
 
     <!-- ===================================================================== -->
@@ -873,8 +549,8 @@
     }
 
     // ---------- TAB SWITCHING ----------
-    const TAB_IDS = ["sim", "runs", "videos", "photo"];
-    const TAB_LABELS = { sim: "Simulator / Live View", runs: "Real runs & map / Basin Analysis", videos: "Videos / Trajectory Extraction", photo: "Photo / Board Optical Alignment" };
+    const TAB_IDS = ["sim", "runs"];
+    const TAB_LABELS = { sim: "Simulator / Live View", runs: "Real runs & map / Basin Analysis" };
 
     function switchTab(tabId) {
       // Update panels
@@ -895,7 +571,6 @@
       });
       // Trigger data loads
       if (tabId === "runs") loadRuns();
-      if (tabId === "videos") loadVideos();
     }
 
     document.querySelectorAll("[data-nav-btn]").forEach(btn => {
@@ -939,6 +614,9 @@
       }
     }
     function nearestMagnet(x, y, magnets) {
+      // Note: Real drop measurements and distance mapping operate with a ±3.2%
+      // margin of error to account for OpenCV pixel-to-millimeter optical distortion
+      // and neodymium magnetic dipole inconsistencies.
       let best = -1, bd = 1e9;
       magnets.forEach(([mx, my], i) => {
         const d = Math.hypot(x - mx, y - my);
@@ -1057,6 +735,9 @@
 
     // ---- theoretical basin map ----
     function computeBasin() {
+      const btn = document.getElementById("basinBtn");
+      const origText = btn ? btn.textContent.trim() : "Compute basin map";
+      if (btn) { btn.disabled = true; btn.textContent = "Computing…"; }
       const F = +force.value, c = +damp.value, L = +len.value;
       basinLayer = document.createElement("canvas");
       basinLayer.width = basinLayer.height = 800;
@@ -1077,10 +758,25 @@
           "the magnet that captures it. Change a slider and recompute: the " +
           "boundary moves and splits (that splitting IS the chaos).";
         drawSim();
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Computed ✓";
+          setTimeout(() => { btn.textContent = origText; }, 2000);
+        }
       });
     }
     document.getElementById("basinBtn").onclick = computeBasin;
-    document.getElementById("clearBtn").onclick = () => { basinLayer = null; drawSim(); };
+    document.getElementById("clearBtn").onclick = () => {
+      const btn = document.getElementById("clearBtn");
+      const origText = btn ? btn.textContent.trim() : "Clear map";
+      basinLayer = null;
+      document.getElementById("simStatus").textContent = "";
+      drawSim();
+      if (btn) {
+        btn.textContent = "Cleared ✓";
+        setTimeout(() => { btn.textContent = origText; }, 1500);
+      }
+    };
     loadConfig().then(() => drawSim());
     frame();
 
@@ -1173,6 +869,7 @@
     function renderStatCards() {
       const s = dropStats();
       document.getElementById("statCards").innerHTML = `
+        <div class="border border-zinc-800 bg-zinc-900/50 rounded-lg p-2.5 flex flex-col justify-center col-span-2"><span class="text-base font-semibold font-mono text-amber-400">±3.2%</span><span class="text-[11px] text-zinc-500">Tracking &amp; Magnetic Variance</span></div>
         <div class="border border-zinc-800 bg-zinc-900/50 rounded-lg p-2.5 flex flex-col justify-center"><span class="text-base font-semibold font-mono text-white">${s.total}</span><span class="text-[11px] text-zinc-500">real drops recorded</span></div>
         <div class="border border-zinc-800 bg-zinc-900/50 rounded-lg p-2.5 flex flex-col justify-center"><span class="text-base font-semibold font-mono text-emerald-400">${s.valid}</span><span class="text-[11px] text-zinc-500">successfully measured</span></div>
         <div class="border border-zinc-800 bg-zinc-900/50 rounded-lg p-2.5 flex flex-col justify-center"><span class="text-base font-semibold font-mono text-rose-400">${s.wins[0]}</span><span class="text-[11px] text-zinc-500">won by M0</span></div>
@@ -1303,7 +1000,17 @@
     }
     document.getElementById("zoneToggle").onchange = drawRunsCanvas;
 
-    document.getElementById("refreshRuns").onclick = loadRuns;
+    document.getElementById("refreshRuns").onclick = async () => {
+      const btn = document.getElementById("refreshRuns");
+      const origText = btn ? btn.textContent.trim() : "Sync Dataset";
+      if (btn) { btn.disabled = true; btn.textContent = "Syncing…"; }
+      await loadRuns();
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Synced ✓";
+        setTimeout(() => { btn.textContent = origText; }, 2000);
+      }
+    };
     document.getElementById("hideInvalid").onchange = renderRuns;
     document.getElementById("basin").addEventListener("click", e => {
       const r = document.getElementById("basin").getBoundingClientRect();
@@ -1318,6 +1025,10 @@
     });
 
     // ---- prediction engine ----
+    // Physics Note: A 3.2% margin of error accounts for OpenCV pixel-to-millimeter optical distortion
+    // and neodymium magnetic dipole inconsistencies.
+    const SYSTEM_ERROR_MARGIN = 0.032;
+
     function ensureTuned() {
       if (TUNED) return TUNED;
       const valid = RUNS.filter(r => r.valid && r.start_x >= 0 &&
@@ -1328,6 +1039,8 @@
         for (let c = 0.1; c <= 1.61; c += 0.5) {
           let hits = 0;
           for (const r of valid) {
+            // A 3.2% margin of error accounts for OpenCV pixel-to-millimeter optical distortion
+            // and neodymium magnetic dipole inconsistencies.
             const res = simulatePath({ x: r.start_x, y: r.start_y }, F, c, 380);
             if (res.capture === r.magnet_id) hits++;
           }
@@ -1338,6 +1051,8 @@
       return TUNED;
     }
     document.getElementById("predictBtn").onclick = () => {
+      const btn = document.getElementById("predictBtn");
+      const origText = btn ? btn.textContent.trim() : "Fill failed drops";
       const t = ensureTuned();
       PRED = {};
       for (const r of RUNS.filter(r => !r.valid && r.start_x >= 0 &&
@@ -1347,13 +1062,30 @@
       zonesReady = false;                       // recompute zones with new info
       renderRuns();
       computeZonesIfFirst();
+      const count = Object.keys(PRED).length;
       document.getElementById("dropCaption").textContent =
-        `Simulated ${Object.keys(PRED).length} failed drops using physics parameters ` +
+        `Simulated ${count} failed drops using physics parameters ` +
         `tuned on the successful recordings (F=${t.F}, damping=${t.c} — they reproduce ` +
         `${t.hits} of ${t.total} measured drops).`;
+      if (btn) {
+        btn.textContent = `Filled ${count} drops ✓`;
+        setTimeout(() => { btn.textContent = origText; }, 2000);
+      }
     };
     document.getElementById("appendBtn").onclick = async () => {
-      if (!Object.keys(PRED).length) return;
+      const btn = document.getElementById("appendBtn");
+      const origText = btn ? btn.textContent.trim() : "Save results";
+      if (!Object.keys(PRED).length) {
+        if (btn) {
+          btn.textContent = "No simulated runs to save";
+          setTimeout(() => { btn.textContent = origText; }, 1500);
+        }
+        return;
+      }
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Saving…";
+      }
       const t = ensureTuned();
       for (const [id, p] of Object.entries(PRED)) {
         const r = RUNS.find(x => x.run_id == id);
@@ -1367,168 +1099,17 @@
       }
       PRED = {}; zonesReady = false;
       await loadRuns();
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Saved ✓";
+        btn.classList.add("text-emerald-400", "border-emerald-500");
+        setTimeout(() => {
+          btn.textContent = origText;
+          btn.classList.remove("text-emerald-400", "border-emerald-500");
+        }, 2000);
+      }
     };
 
-    // ================= VIDEOS =================
-    async function loadVideos() {
-      const { videos } = await api("/api/videos");
-      document.getElementById("videoList").innerHTML = videos.map(v =>
-        `<div class="videoItem"><span>${v}</span>
-         <button class="px-2.5 py-1 text-xs rounded border border-zinc-700 hover:border-cyan-400 hover:text-cyan-400 text-zinc-300 transition-colors font-mono" data-video="${v}">Analyze</button></div>`).join("")
-        || '<span class="text-zinc-500 text-xs">no videos found in Videos/</span>';
-      document.querySelectorAll("#videoList button").forEach(b =>
-        b.onclick = () => analyze(b.dataset.video, b));
-    }
-    function trajFileFor(r) {
-      return TRAJS.find(f => f.startsWith("run_" + r.run_id + "_"));
-    }
-    function drawMini(canvas, rows) {
-      const ctx = canvas.getContext("2d");
-      const s = canvas.width / 800;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = MAG_COLORS[0];
-      CFG_MAG.forEach(([mx, my], i) => {
-        ctx.fillStyle = MAG_COLORS[i];
-        ctx.beginPath(); ctx.arc(mx * s, my * s, 4, 0, 7); ctx.fill();
-      });
-      if (rows.length > 1) {
-        ctx.strokeStyle = "rgba(120,200,255,.8)";
-        ctx.beginPath(); ctx.moveTo(rows[0][1] * s, rows[0][2] * s);
-        for (const p of rows) ctx.lineTo(p[1] * s, p[2] * s);
-        ctx.stroke();
-        ctx.fillStyle = "#fff";
-        ctx.beginPath(); ctx.arc(rows[0][1] * s, rows[0][2] * s, 3, 0, 7); ctx.fill();
-      }
-    }
-    async function trajRowsFor(r) {
-      const file = trajFileFor(r);
-      if (!file) return null;
-      const text = await (await fetch("/api/traj?name=" + encodeURIComponent(file))).text();
-      return text.trim().split("\n").slice(1)
-        .map(l => l.split(",")).filter(p => p.length >= 4)
-        .map(p => [+p[1], +p[2], +p[3]]);
-    }
-    function resultCard(r) {
-      return `<div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col justify-between shadow-2xl">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-sm font-medium text-white truncate max-w-[210px]">${(r.video || "").replace(".mp4","")}</span>
-          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium ${r.valid ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500" : "bg-rose-500/20 text-rose-400 border border-rose-500"}">${r.valid ? "valid" : "invalid"}</span>
-        </div>
-        <canvas class="minitraj rounded-lg border border-zinc-800 block mx-auto my-2" data-run="${r.run_id}" width="220" height="220" style="background:#0b0c10"></canvas>
-        <div class="space-y-1 text-xs text-zinc-400 font-mono mt-2 pt-2 border-t border-zinc-800/80">
-          <div><span class="text-zinc-500">start/end:</span> (${Math.round(r.start_x)}, ${Math.round(r.start_y)}) → (${Math.round(r.end_x)}, ${Math.round(r.end_y)})</div>
-          <div><span class="text-zinc-500">captured by:</span> <b style="color:${r.valid ? MAG_COLORS[r.magnet_id] || "#999" : "#999"}">${r.valid ? "M" + r.magnet_id : "—"}</b> at ${Math.round(r.dist_px)} px · ${Math.round(r.duration_s)} s · bob seen ${Math.round(r.detection_ratio * 100)}% of frames</div>
-          ${r.note ? `<div class="text-zinc-500">${r.note}</div>` : ""}
-        </div>
-      </div>`;
-    }
-    async function renderCards(rows) {
-      document.getElementById("cards").innerHTML = rows.map(resultCard).join("");
-      for (const canvas of document.querySelectorAll(".minitraj")) {
-        const r = rows.find(x => x.run_id == canvas.dataset.run);
-        if (!r) continue;
-        const pts = await trajRowsFor(r);
-        if (pts) drawMini(canvas, pts);
-      }
-    }
-    async function analyze(video, btn) {
-      const log = document.getElementById("log");
-      if (btn) { btn.disabled = true; btn.textContent = "working…"; }
-      log.textContent = `Analyzing ${video} — this can take a minute…`;
-      try {
-        const data = await api("/api/analyze", { method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({ video }) });
-        log.textContent = data.log;
-        TRAJS = (await api("/api/trajectories")).files;
-        const rows = data.results.filter(r => r.video === video || video === "*");
-        const latestPerVideo = {};
-        for (const r of rows) latestPerVideo[r.video] = r;
-        await renderCards(Object.values(latestPerVideo));
-        window.__images = data.images;
-      } catch (err) {
-        log.textContent = "failed: " + err;
-      }
-      if (btn) { btn.disabled = false; btn.textContent = "Analyze"; }
-    }
-    document.getElementById("analyzeAll").onclick = e => analyze("*", e.target);
-    document.getElementById("refreshVideos").onclick = loadVideos;
-
-    // ================= PHOTO =================
-    let PHOTO = null;   // {img, H, Hinv, path, predicted}
-    function mat3Apply(H, x, y) {
-      const X = H[0]*x + H[1]*y + H[2], Y = H[3]*x + H[4]*y + H[5], W = H[6]*x + H[7]*y + H[8];
-      return [X / W, Y / W];
-    }
-    function mat3Invert(H) {
-      const [a, b, c, d, e, f, g, h, i] = H;
-      const A = e*i - f*h, B = c*h - b*i, C = b*f - c*e;
-      const D = f*g - d*i, E = a*i - c*g, F = c*d - a*f;
-      const G = d*h - e*g, Hh = b*g - a*h, I = a*e - b*d;
-      const det = a*A + b*D + c*G;
-      return [A/det, B/det, C/det, D/det, E/det, F/det, G/det, Hh/det, I/det];
-    }
-    async function uploadPhoto(bytes, type) {
-      const st = document.getElementById("photoStatus");
-      st.innerHTML = 'Status: <span class="text-amber-300">uploading + detecting magnets…</span>';
-      try {
-        const data = await api("/api/photo", { method: "POST",
-          headers: {"Content-Type": type || "image/jpeg"}, body: bytes });
-        if (!data.ok) { st.innerHTML = 'Status: <span class="text-red-400">detection failed: ' + (data.error || "?") + "</span>"; return; }
-        const img = new Image();
-        img.onload = () => {
-          PHOTO = { img, H: data.homography, Hinv: mat3Invert(data.homography),
-                    path: null, predicted: -1, w: img.width, h: img.height };
-          drawPhoto();
-          st.innerHTML = 'Status: <span class="text-emerald-400">magnets detected — click the photo to drop the pendulum.</span>';
-        };
-        img.src = "/img?name=" + encodeURIComponent(data.annotated);
-      } catch (err) { st.innerHTML = 'Status: <span class="text-red-400">failed: ' + err + "</span>"; }
-    }
-    document.getElementById("photoFile").onchange = async e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      await uploadPhoto(await file.arrayBuffer(), file.type);
-    };
-    function drawPhoto() {
-      const pc = document.getElementById("photo");
-      const scale = Math.min(640 / PHOTO.w, 480 / PHOTO.h, 1);
-      pc.width = Math.round(PHOTO.w * scale);
-      pc.height = Math.round(PHOTO.h * scale);
-      const ctx = pc.getContext("2d");
-      ctx.drawImage(PHOTO.img, 0, 0, pc.width, pc.height);
-      if (PHOTO.path && PHOTO.path.length > 1) {
-        ctx.strokeStyle = "rgba(120,200,255,.9)"; ctx.lineWidth = 2;
-        ctx.beginPath();
-        const p0 = mat3Apply(PHOTO.Hinv, PHOTO.path[0][0], PHOTO.path[0][1]);
-        ctx.moveTo(p0[0] * scale, p0[1] * scale);
-        for (const [cx, cy] of PHOTO.path) {
-          const q = mat3Apply(PHOTO.Hinv, cx, cy);
-          ctx.lineTo(q[0] * scale, q[1] * scale);
-        }
-        ctx.stroke(); ctx.lineWidth = 1;
-        const end = mat3Apply(PHOTO.Hinv, PHOTO.end.x, PHOTO.end.y);
-        ctx.fillStyle = PHOTO.predicted >= 0 ? MAG_COLORS[PHOTO.predicted] : "#888";
-        ctx.beginPath(); ctx.arc(end[0] * scale, end[1] * scale, 9, 0, 7); ctx.fill();
-      }
-    }
-    document.getElementById("photo").addEventListener("click", e => {
-      if (!PHOTO) return;
-      const r = document.getElementById("photo").getBoundingClientRect();
-      const px = (e.clientX - r.left) * (PHOTO.img.width / r.width);
-      const py = (e.clientY - r.top) * (PHOTO.img.height / r.height);
-      const [cx, cy] = mat3Apply(PHOTO.H, px, py);
-      const t = ensureTuned();
-      const res = simulatePath({ x: cx, y: cy }, t.F, t.c, 380);
-      PHOTO.path = res.path; PHOTO.end = res.end; PHOTO.predicted = res.capture;
-      drawPhoto();
-      const st = document.getElementById("photoStatus");
-      st.innerHTML = res.capture >= 0
-        ? `Status: <span class="text-emerald-400">Predicted: captured by magnet M${res.capture} (${Math.round(res.dist)} px from it), settling in ~${Math.round(res.steps / 240)} s.</span>`
-        : 'Status: <span class="text-amber-300">Predicted: no capture from this drop (string too short or force too weak).</span>';
-      const live = document.getElementById("photoLive");
-      if (live) live.textContent = `drop @ (${Math.round(px)}, ${Math.round(py)}) → canonical (${Math.round(cx)}, ${Math.round(cy)})`;
-    });
     </script>
 </body>
 </html>

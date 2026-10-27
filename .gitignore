@@ -3,4 +3,6 @@ build/
 Videos/
 data/dumps/
 data/inspect/
+data/uploads/
+__pycache__/
 *.mp4
